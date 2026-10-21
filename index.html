@@ -46,20 +46,39 @@ input,textarea,select{font-family:inherit}
         </div>
       </sc-if>
       <nav style="display:flex;align-items:center;gap:6px;margin-left:auto">
-        <button onClick="{{ goBrowse }}" style="height:40px;padding:0 14px;border:0;background:transparent;font-size:15px;font-weight:600;color:#141210;cursor:pointer;border-radius:99px" style-hover="background:#EDE6DB">browse</button>
-        <button onClick="{{ goDash }}" style="height:40px;padding:0 14px;border:0;background:transparent;font-size:15px;font-weight:600;color:#141210;cursor:pointer;border-radius:99px;display:flex;align-items:center;gap:6px" style-hover="background:#EDE6DB">
-          <span>your cart</span>
-          <sc-if value="{{ hasIncoming }}" hint-placeholder-val="{{ false }}"><span style="min-width:20px;height:20px;padding:0 6px;border-radius:99px;background:#E0261B;color:#fff;font-family:'DM Mono',monospace;font-size:11px;display:flex;align-items:center;justify-content:center">{{ incomingCount }}</span></sc-if>
-        </button>
-        <button onClick="{{ goSell }}" style="height:40px;padding:0 18px;border:0;background:#E0261B;color:#fff;font-size:15px;font-weight:700;cursor:pointer;border-radius:99px" style-hover="background:#C21C12">sell</button>
+        <sc-if value="{{ wideNav }}" hint-placeholder-val="{{ true }}">
+          <button onClick="{{ goBrowse }}" style="height:40px;padding:0 14px;border:0;background:transparent;font-size:15px;font-weight:600;color:#141210;cursor:pointer;border-radius:99px" style-hover="background:#EDE6DB">browse</button>
+          <button onClick="{{ goDash }}" style="height:40px;padding:0 14px;border:0;background:transparent;font-size:15px;font-weight:600;color:#141210;cursor:pointer;border-radius:99px;display:flex;align-items:center;gap:6px" style-hover="background:#EDE6DB">
+            <span>your cart</span>
+            <sc-if value="{{ hasIncoming }}" hint-placeholder-val="{{ false }}"><span style="min-width:20px;height:20px;padding:0 6px;border-radius:99px;background:#E0261B;color:#fff;font-family:'DM Mono',monospace;font-size:11px;display:flex;align-items:center;justify-content:center">{{ incomingCount }}</span></sc-if>
+          </button>
+          <button onClick="{{ goSell }}" style="height:40px;padding:0 18px;border:0;background:#E0261B;color:#fff;font-size:15px;font-weight:700;cursor:pointer;border-radius:99px" style-hover="background:#C21C12">sell</button>
+        </sc-if>
         <sc-if value="{{ loggedOut }}" hint-placeholder-val="{{ true }}">
           <button onClick="{{ openLogin }}" style="height:40px;padding:0 16px;border:1.5px solid #141210;background:transparent;color:#141210;font-size:15px;font-weight:600;cursor:pointer;border-radius:99px">log in</button>
         </sc-if>
         <sc-if value="{{ loggedIn }}" hint-placeholder-val="{{ false }}">
           <button onClick="{{ goDash }}" title="{{ userEmail }}" style="width:40px;height:40px;border:0;border-radius:50%;background:#F4BFCB;color:#141210;font-weight:800;font-size:17px;cursor:pointer">{{ userInitial }}</button>
         </sc-if>
+        <sc-if value="{{ narrowNav }}" hint-placeholder-val="{{ false }}">
+          <button onClick="{{ toggleNav }}" aria-label="menu" aria-expanded="{{ navOpen }}" style="position:relative;width:40px;height:40px;border:0;border-radius:50%;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center">
+            <sc-if value="{{ navClosed }}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#141210" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"></path></svg></sc-if>
+            <sc-if value="{{ navOpen }}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#141210" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg></sc-if>
+            <sc-if value="{{ hasIncoming }}"><span style="position:absolute;top:6px;right:5px;width:9px;height:9px;border-radius:50%;background:#E0261B;box-shadow:0 0 0 2px #F7F3EE"></span></sc-if>
+          </button>
+        </sc-if>
       </nav>
     </div>
+    <sc-if value="{{ showMenu }}" hint-placeholder-val="{{ false }}">
+      <div style="border-top:1px solid #E3DACD;padding:8px 16px 16px;display:flex;flex-direction:column">
+        <button onClick="{{ menuBrowse }}" style="height:52px;border:0;border-bottom:1px solid #EAE3D8;background:transparent;text-align:left;font-size:20px;font-weight:700;letter-spacing:-.03em;color:#141210;cursor:pointer">browse</button>
+        <button onClick="{{ menuDash }}" style="height:52px;border:0;border-bottom:1px solid #EAE3D8;background:transparent;text-align:left;font-size:20px;font-weight:700;letter-spacing:-.03em;color:#141210;cursor:pointer;display:flex;align-items:center;gap:8px">
+          <span>your cart</span>
+          <sc-if value="{{ hasIncoming }}"><span style="min-width:22px;height:22px;padding:0 7px;border-radius:99px;background:#E0261B;color:#fff;font-family:'DM Mono',monospace;font-size:12px;display:flex;align-items:center;justify-content:center">{{ incomingCount }}</span></sc-if>
+        </button>
+        <button onClick="{{ menuSell }}" style="margin-top:14px;height:50px;border:0;border-radius:99px;background:#E0261B;color:#fff;font-size:17px;font-weight:700;cursor:pointer">sell something</button>
+      </div>
+    </sc-if>
   </header>
 
   <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
@@ -172,7 +191,7 @@ input,textarea,select{font-family:inherit}
           <div style="font-size:16px;line-height:1.45;text-wrap:pretty">Not the first, not the highest. Whoever you want. Then meet on campus.</div>
         </div>
       </div>
-    <img src="assets/smiley-sticker.png" alt="" style="position: absolute; top: -12px; width: 120px; height: 120px; transform: rotate(12deg); left: 914px"></section>
+    <img src="assets/smiley-sticker.png" alt="" style="position: absolute; top: -12px; width: 120px; height: 120px; transform: rotate(12deg); right: clamp(12px, 18%, 280px)"></section>
   </sc-if>
 
   <sc-if value="{{ isItem }}" hint-placeholder-val="{{ false }}">
@@ -532,7 +551,7 @@ class Component extends DCLogic {
     listings: [], loaded: false, cat: 'all', q: '', sort: 'new', favs: {},
     offerAmt: '', offerMsg: '', offerErr: '', activePhoto: 0, dashTab: 'selling',
     sell: this.blankSell(), sellErr: '', dragOver: false, publishing: false,
-    heroPos: {}, z: 20, vw: typeof window !== 'undefined' ? window.innerWidth : 1280, toast: null
+    navOpen: false, heroPos: {}, z: 20, vw: typeof window !== 'undefined' ? window.innerWidth : 1280, toast: null
   };
 
   blankSell() { return { title: '', price: '', cat: 'fits', cond: 'good', desc: '', pickup: 'leavey library', photos: [] }; }
@@ -639,7 +658,7 @@ class Component extends DCLogic {
     window.removeEventListener('pointerup', this.onUp);
   };
 
-  go(view, extra) { this.setState({ view, ...(extra || {}) }); window.scrollTo(0, 0); }
+  go(view, extra) { this.setState({ view, navOpen: false, ...(extra || {}) }); window.scrollTo(0, 0); }
   scrollToBrowse() {
     setTimeout(() => { const el = document.getElementById('browse'); if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 70, behavior: 'smooth' }); }, 30);
   }
@@ -875,7 +894,12 @@ class Component extends DCLogic {
       goBrowse: () => { if (s.view !== 'home') this.go('home'); this.scrollToBrowse(); },
       goSell: () => this.requireLogin(() => this.go('sell')),
       goDash: () => this.requireLogin(() => this.go('dashboard')),
-      openLogin: () => this.setState({ loginOpen: true, pending: null, loginErr: '' }),
+      openLogin: () => this.setState({ loginOpen: true, pending: null, loginErr: '', navOpen: false }),
+      wideNav: !mobile, narrowNav: mobile, navOpen: s.navOpen, navClosed: !s.navOpen, showMenu: mobile && s.navOpen,
+      toggleNav: () => this.setState({ navOpen: !s.navOpen }),
+      menuBrowse: () => { this.setState({ navOpen: false }); if (s.view !== 'home') this.go('home'); this.scrollToBrowse(); },
+      menuDash: () => { this.setState({ navOpen: false }); this.requireLogin(() => this.go('dashboard')); },
+      menuSell: () => { this.setState({ navOpen: false }); this.requireLogin(() => this.go('sell')); },
       loggedIn: !!user, loggedOut: !user, userInitial: user ? user.name[0].toUpperCase() : '', userEmail: user ? user.email : '',
       hasIncoming: !!user && incoming > 0, incomingCount: incoming,
 

@@ -3,6 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script>
+  // The anon key is public by design; Row Level Security in supabase/schema.sql
+  // decides what it can read and write.
+  window.sb = supabase.createClient(
+    'https://fmusebdvdgvqyfhmljly.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZtdXNlYmR2ZGd2cXlmaG1samx5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI1NDE4MTEsImV4cCI6MjEwODExNzgxMX0.wSZvRRJJW_vlDOg5sDdu4Q3BUEbT408yN-7DnAS2iYA'
+  );
+</script>
 <script src="./support.js"></script>
 </head>
 <body>
@@ -337,7 +346,7 @@ input,textarea,select{font-family:inherit}
           </label>
 
           <sc-if value="{{ hasSellErr }}"><div style="font-size:15px;color:#E0261B;font-weight:600">{{ sellErr }}</div></sc-if>
-          <button onClick="{{ publish }}" style="height:58px;border:0;border-radius:99px;background:#E0261B;color:#fff;font-weight:800;font-size:18px;letter-spacing:-.02em;cursor:pointer" style-hover="background:#C21C12">put it on the cart</button>
+          <button onClick="{{ publish }}" style="height:58px;border:0;border-radius:99px;background:#E0261B;color:#fff;font-weight:800;font-size:18px;letter-spacing:-.02em;cursor:pointer" style-hover="background:#C21C12">{{ publishLabel }}</button>
         </div>
 
         <div style="display:flex;flex-direction:column;gap:12px;position:sticky;top:90px">
@@ -362,9 +371,12 @@ input,textarea,select{font-family:inherit}
     <div style="max-width:1080px;width:100%;margin:0 auto;padding:clamp(28px,4vw,56px) clamp(16px,3vw,32px) 72px;display:flex;flex-direction:column;gap:24px">
       <div style="display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px">
         <h1 style="margin:0;font-weight:800;font-size:clamp(40px,6vw,76px);letter-spacing:-.055em;line-height:.88">your cart.</h1>
-        <div style="display:flex;gap:4px;padding:4px;border-radius:99px;background:#EAE3D8">
-          <button onClick="{{ tabSelling }}" style="height:40px;padding:0 18px;border:0;border-radius:99px;background:{{ tabSellBg }};color:{{ tabSellFg }};font-size:15px;font-weight:600;cursor:pointer">selling · {{ mineCount }}</button>
-          <button onClick="{{ tabBuying }}" style="height:40px;padding:0 18px;border:0;border-radius:99px;background:{{ tabBuyBg }};color:{{ tabBuyFg }};font-size:15px;font-weight:600;cursor:pointer">your offers · {{ myOffersCount }}</button>
+        <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px">
+          <div style="display:flex;gap:4px;padding:4px;border-radius:99px;background:#EAE3D8">
+            <button onClick="{{ tabSelling }}" style="height:40px;padding:0 18px;border:0;border-radius:99px;background:{{ tabSellBg }};color:{{ tabSellFg }};font-size:15px;font-weight:600;cursor:pointer">selling · {{ mineCount }}</button>
+            <button onClick="{{ tabBuying }}" style="height:40px;padding:0 18px;border:0;border-radius:99px;background:{{ tabBuyBg }};color:{{ tabBuyFg }};font-size:15px;font-weight:600;cursor:pointer">your offers · {{ myOffersCount }}</button>
+          </div>
+          <button onClick="{{ logout }}" style="height:40px;padding:0 16px;border:1.5px solid #141210;border-radius:99px;background:transparent;color:#141210;font-size:14px;font-weight:600;cursor:pointer">log out</button>
         </div>
       </div>
 
@@ -429,7 +441,7 @@ input,textarea,select{font-family:inherit}
               </div>
               <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
                 <div style="font-family:'DM Mono',monospace;font-weight:500;font-size:20px">{{ b.amount }}</div>
-                <div style="font-family:'DM Mono',monospace;font-size:11px;background:#FFF4D1;padding:3px 9px;border-radius:99px">waiting on seller</div>
+                <div style="font-family:'DM Mono',monospace;font-size:11px;background:#FFF4D1;padding:3px 9px;border-radius:99px">{{ b.statusLabel }}</div>
               </div>
             </div>
           </sc-for>
@@ -517,39 +529,64 @@ class Component extends DCLogic {
   state = {
     view: 'home', itemId: null, user: null,
     loginOpen: false, loginMode: 'login', loginEmail: '', loginPw: '', loginName: '', loginErr: '', pending: null,
-    listings: this.seed(), cat: 'all', q: '', sort: 'new', favs: {},
+    listings: [], loaded: false, cat: 'all', q: '', sort: 'new', favs: {},
     offerAmt: '', offerMsg: '', offerErr: '', activePhoto: 0, dashTab: 'selling',
-    sell: this.blankSell(), sellErr: '', dragOver: false,
+    sell: this.blankSell(), sellErr: '', dragOver: false, publishing: false,
     heroPos: {}, z: 20, vw: typeof window !== 'undefined' ? window.innerWidth : 1280, toast: null
   };
 
   blankSell() { return { title: '', price: '', cat: 'fits', cond: 'good', desc: '', pickup: 'leavey library', photos: [] }; }
 
-  seed() {
-    const L = (id, title, cat, price, cond, seller, pickup, time, desc, extra) => Object.assign({ id, title, cat, price, cond, seller, pickup, time, desc, photos: [], offers: [], status: 'active', soldTo: null, mine: false, slotId: 'tc-' + id }, extra || {});
-    return [
-      L('l1', 'comme des garçons converse, w8', 'fits', 65, 'like new', 'maya k.', 'village', '1h ago', 'Worn maybe five times. Hearts still bright, soles clean.', { photos: ['uploads/pasted-1792533674911-0.png'], cutout: true, bg: '#F4BFCB' }),
-      L('l11', 'rugby stripe polo, l', 'fits', 30, 'good', 'ben a.', 'doheny steps', '2h ago', 'Red and gold, so basically game-day mandatory.', { photos: ['uploads/pasted-1792533893712-0.png'], cutout: true, bg: '#C5D6E2' }),
-      L('l2', 'nespresso vertuo next', 'dorm', 70, 'like new', 'jordan p.', 'parkside', '3h ago', 'Descaled last week. Comes with 6 pods to get you through midterms.', { photos: ['uploads/pasted-1792533722469-0.png'], cutout: true, bg: '#C5D6E2' }),
-      L('l7', 'pink mushroom lamp', 'dorm', 22, 'like new', 'zoe h.', 'village', '4h ago', 'Pull-chain works, warm bulb included.', { photos: ['uploads/pasted-1792533820752-0.png'], cutout: true, bg: '#EAE3D8' }),
-      L('l10', 'pointelle cardigan, pink', 'fits', 28, 'like new', 'priya s.', 'leavey library', '5h ago', 'Size s, cropped. Tags removed but never really worn.', { photos: ['uploads/pasted-1792533882376-0.png'], cutout: true, bg: '#C5D6E2' }),
-      L('l16', 'airpods 4', 'tech', 90, 'like new', 'noah r.', 'vkc', '6h ago', 'Case, cable, box. Battery still great.', { photos: ['uploads/pasted-1792534009536-0.png'], cutout: true, bg: '#EAE3D8' }),
-      L('l5', 'priority cruiser bike', 'bikes', 260, 'good', 'lena w.', 'tutor campus center', '8h ago', 'Belt drive, no greasy chain. Medium frame, fits 5\'4"–5\'10".', { photos: ['uploads/pasted-1792533784119-0.png'], cutout: true, bg: '#F4BFCB' }),
-      L('l12', 'cable knit cardigan, brown', 'fits', 120, 'like new', 'ava l.', 'doheny steps', '10h ago', 'Cashmere blend, size m. Dry cleaned.', { photos: ['uploads/pasted-1792533908602-0.png'], cutout: true, bg: '#F4BFCB' }),
-      L('l3', 'jonas brothers, the album (vinyl)', 'tickets', 18, 'like new', 'chris d.', 'vkc', '12h ago', 'Played twice. Sleeve has no creases.', { photos: ['uploads/pasted-1792533734928-0.png'], cutout: true, bg: '#EAE3D8' }),
-      L('l13', 'ugg ultra mini, w7', 'fits', 85, 'good', 'emma j.', 'parkside', '1d ago', 'Chestnut. Sprayed with protector, minimal wear.', { photos: ['uploads/pasted-1792533948307-0.png'], cutout: true, bg: '#C5D6E2' }),
-      L('l6', 'pleated table lamp, orange', 'dorm', 14, 'like new', 'sam t.', 'village', '1d ago', 'Rechargeable, no cord. Lasts about a week.', { photos: ['uploads/pasted-1792533810844-0.png'], cutout: true, bg: '#C5D6E2' }),
-      L('l9', 'jansport backpack, navy', 'fits', 25, 'good', 'kai n.', 'leavey library', '1d ago', 'Laptop sleeve, leather bottom. Zippers all good.', { photos: ['uploads/pasted-1792533869607-0.png'], cutout: true, bg: '#F4BFCB' }),
-      L('l8', 'carbon road bike, 54cm', 'bikes', 480, 'good', 'marcus l.', 'tutor campus center', '2d ago', 'Electronic shifting, disc brakes. Serviced in August.', { photos: ['uploads/pasted-1792533850527-0.png'], cutout: true, bg: '#EAE3D8' }),
-      L('l14', 'ikea 2-door cabinet, oak', 'dorm', 40, 'good', 'mia c.', 'parkside', '2d ago', 'Already assembled. You\'ll need a friend and a car.', { photos: ['uploads/pasted-1792533974229-0.png'], cutout: true, bg: '#F4BFCB' }),
-      L('l15', 'wuthering heights, hardcover', 'books', 12, 'like new', 'ella f.', 'doheny steps', '3d ago', 'The pretty edition. No notes inside.', { photos: ['uploads/pasted-1792533999929-0.png'], cutout: true, bg: '#EAE3D8' }),
-      L('m1', 'jbl charge 5 speaker', 'tech', 80, 'like new', 'you', 'vkc', '4d ago', 'Loud enough for the whole floor. Waterproof, charger included.', { photos: ['uploads/pasted-1792534025394-0.png'], cutout: true, bg: '#C5D6E2', mine: true, offers: [
-        { id: 'o1', name: 'dana r.', amount: 70, msg: 'can meet at vkc after 2?', time: '1h ago', status: 'pending' },
-        { id: 'o2', name: 'marcus l.', amount: 80, msg: 'full price if you can do today', time: '3h ago', status: 'pending' },
-        { id: 'o3', name: 'kai n.', amount: 60, msg: '', time: '5h ago', status: 'pending' }] }),
-      L('m2', 'z lounge chair, oak', 'dorm', 140, 'good', 'you', 'village', '5d ago', 'Solid oak frame, grey cushions. Comfiest seat in the apartment.', { photos: ['uploads/pasted-1792533767488-0.png'], cutout: true, bg: '#EAE3D8', mine: true, offers: [
-        { id: 'o4', name: 'ella f.', amount: 115, msg: 'i have a car, can pick up anytime', time: '2h ago', status: 'pending' }] })
-    ];
+  ago(ts) {
+    const m = Math.max(0, Math.round((Date.now() - new Date(ts).getTime()) / 60000));
+    if (m < 1) return 'just now';
+    if (m < 60) return m + 'm ago';
+    if (m < 1440) return Math.round(m / 60) + 'h ago';
+    return Math.round(m / 1440) + 'd ago';
+  }
+
+  async load() {
+    const uid = this.state.user ? this.state.user.id : null;
+    const [ls, os, fs] = await Promise.all([
+      sb.from('listings').select('*').order('created_at', { ascending: false }),
+      uid ? sb.from('offers').select('*').order('created_at', { ascending: false }) : { data: [] },
+      uid ? sb.from('favorites').select('listing_id') : { data: [] }
+    ]);
+    if (ls.error) { this.setState({ loaded: true }); return this.showToast("couldn't load the cart. try refreshing."); }
+    const offersBy = {};
+    (os.data || []).forEach(o => (offersBy[o.listing_id] = offersBy[o.listing_id] || []).push({
+      id: o.id, name: o.buyer_name, amount: o.amount, msg: o.msg, time: this.ago(o.created_at), status: o.status, mine: o.buyer_id === uid
+    }));
+    const listings = ls.data.map(r => ({
+      id: r.id, title: r.title, cat: r.cat, price: r.price, cond: r.cond, seller: r.seller_name, pickup: r.pickup,
+      time: this.ago(r.created_at), desc: r.description || 'No details yet.', photos: r.photos || [],
+      offers: offersBy[r.id] || [], pendingOffers: r.pending_offers, status: r.status, soldTo: r.sold_to,
+      mine: !!uid && r.seller_id === uid, slotId: 'tc-' + r.id, cutout: r.cutout, bg: r.bg
+    }));
+    const favs = {};
+    (fs.data || []).forEach(f => { favs[f.listing_id] = true; });
+    this.setState({ listings, favs, loaded: true });
+  }
+
+  async setSession(session) {
+    if (!session) {
+      if (this.state.user || !this.state.loaded) this.setState({ user: null, favs: {} }, () => this.load());
+      return;
+    }
+    if (this.state.user && this.state.user.id === session.user.id) return;
+    const { data: p } = await sb.from('profiles').select('name').eq('id', session.user.id).maybeSingle();
+    const email = session.user.email;
+    await new Promise(r => this.setState({ user: { id: session.user.id, email, name: p ? p.name : email.split('@')[0] } }, r));
+    await this.load();
+  }
+
+  authMsg(err) {
+    const m = (err && err.message) || '';
+    if (/invalid login/i.test(m)) return 'wrong email or password.';
+    if (/not confirmed/i.test(m)) return 'confirm your email first. check your usc inbox.';
+    if (/already registered/i.test(m)) return 'that email already has an account. log in instead.';
+    if (/database error saving new user/i.test(m)) return 'use your @usc.edu email.';
+    return m.toLowerCase() || 'something went wrong. try again.';
   }
 
   heroBase(mobile) {
@@ -564,8 +601,12 @@ class Component extends DCLogic {
   componentDidMount() {
     this.onResize = () => this.setState({ vw: window.innerWidth });
     window.addEventListener('resize', this.onResize);
+    // Fires once with the saved session (INITIAL_SESSION), then on every login/logout.
+    // Deferred because Supabase calls made inside this callback can deadlock.
+    this.authSub = sb.auth.onAuthStateChange((_e, session) => setTimeout(() => this.setSession(session), 0)).data.subscription;
   }
   componentWillUnmount() {
+    if (this.authSub) this.authSub.unsubscribe();
     window.removeEventListener('resize', this.onResize);
     window.removeEventListener('pointermove', this.onMove);
     window.removeEventListener('pointerup', this.onUp);
@@ -611,7 +652,16 @@ class Component extends DCLogic {
     this.setState({ toast: msg });
     this.toastT = setTimeout(() => this.setState({ toast: null }), 3400);
   }
-  toggleFav(id) { this.setState(s => ({ favs: { ...s.favs, [id]: !s.favs[id] } })); }
+  toggleFav(id) {
+    this.requireLogin(async () => {
+      const on = !this.state.favs[id], uid = this.state.user.id;
+      this.setState(s => ({ favs: { ...s.favs, [id]: on } }));
+      const { error } = on
+        ? await sb.from('favorites').insert({ user_id: uid, listing_id: id })
+        : await sb.from('favorites').delete().match({ user_id: uid, listing_id: id });
+      if (error) { this.setState(s => ({ favs: { ...s.favs, [id]: !on } })); this.showToast("couldn't save that. try again."); }
+    });
+  }
   openItem(id) {
     const l = this.state.listings.find(x => x.id === id);
     const mineOffer = l.offers.find(o => o.mine);
@@ -620,43 +670,46 @@ class Component extends DCLogic {
   sellerName(l) { return l.mine ? (this.state.user ? this.state.user.name + ' (you)' : 'you') : l.seller; }
   cat(id) { return this.CATS.find(c => c.id === id) || this.CATS[1]; }
 
-  submitLogin = () => {
+  submitLogin = async () => {
     const s = this.state;
     const email = s.loginEmail.trim().toLowerCase();
     if (!/^[^@\s]+@usc\.edu$/.test(email)) return this.setState({ loginErr: 'use your @usc.edu email' });
     if (s.loginPw.length < 6) return this.setState({ loginErr: 'password needs 6+ characters' });
     if (s.loginMode === 'signup' && !s.loginName.trim()) return this.setState({ loginErr: 'add your name' });
-    const local = email.split('@')[0].split(/[._0-9]/).filter(Boolean);
-    const name = s.loginMode === 'signup' ? s.loginName.trim().toLowerCase() : ((local[0] || 'trojan') + (local[1] ? ' ' + local[1][0] + '.' : ''));
+    if (s.loginBusy) return;
+    this.setState({ loginErr: '', loginBusy: true });
+    const res = s.loginMode === 'signup'
+      ? await sb.auth.signUp({ email, password: s.loginPw, options: { data: { name: s.loginName.trim().toLowerCase() }, emailRedirectTo: location.origin + location.pathname } })
+      : await sb.auth.signInWithPassword({ email, password: s.loginPw });
+    this.setState({ loginBusy: false });
+    if (res.error) return this.setState({ loginErr: this.authMsg(res.error) });
     const fn = s.pending;
-    this.setState({ user: { name, email }, loginOpen: false, pending: null, loginPw: '', loginErr: '' }, () => {
-      if (fn) fn(); else this.showToast('welcome to the cart, ' + name.split(' ')[0] + '.');
-    });
+    this.setState({ loginOpen: false, pending: null, loginPw: '', loginErr: '' });
+    if (!res.data.session) return this.showToast('almost there. check your usc inbox to confirm, then log in.');
+    await this.setSession(res.data.session);
+    if (fn) fn(); else this.showToast('welcome to the cart, ' + this.state.user.name.split(' ')[0] + '.');
   };
 
-  sendOffer = () => this.requireLogin(() => {
+  sendOffer = () => this.requireLogin(async () => {
     const s = this.state;
     const amt = Math.round(parseFloat(s.offerAmt));
     if (!amt || amt < 1) return this.setState({ offerErr: 'enter an amount' });
     const it = s.listings.find(l => l.id === s.itemId);
     const had = it.offers.some(o => o.mine);
-    this.setState(st => ({
-      offerErr: '', offerMsg: '',
-      listings: st.listings.map(l => l.id !== st.itemId ? l : { ...l, offers: [{ id: 'u' + Date.now(), name: st.user.name, amount: amt, msg: st.offerMsg.trim(), time: 'just now', status: 'pending', mine: true }, ...l.offers.filter(o => !o.mine)] })
-    }));
+    const { error } = await sb.rpc('send_offer', { p_listing: it.id, p_amount: amt, p_msg: s.offerMsg.trim() });
+    if (error) return this.setState({ offerErr: error.message });
+    this.setState({ offerErr: '', offerMsg: '' });
+    await this.load();
     this.showToast(had ? 'offer updated to $' + amt + '.' : '$' + amt + ' offer sent. ' + it.seller + ' picks who gets it.');
   });
 
-  decide(lid, oid, accept) {
-    let buyer = '';
-    this.setState(s => ({
-      listings: s.listings.map(l => {
-        if (l.id !== lid) return l;
-        if (!accept) return { ...l, offers: l.offers.map(o => o.id === oid ? { ...o, status: 'declined' } : o) };
-        const o = l.offers.find(x => x.id === oid); buyer = o.name;
-        return { ...l, status: 'sold', soldTo: o.name, offers: l.offers.map(x => ({ ...x, status: x.id === oid ? 'accepted' : (x.status === 'pending' ? 'declined' : x.status) })) };
-      })
-    }), () => { if (accept) this.showToast('you picked ' + buyer + '. we opened a chat to set up pickup.'); });
+  async decide(lid, oid, accept) {
+    const l = this.state.listings.find(x => x.id === lid);
+    const o = l && l.offers.find(x => x.id === oid);
+    const { error } = await sb.rpc('decide_offer', { p_offer: oid, p_accept: accept });
+    if (error) return this.showToast(error.message);
+    await this.load();
+    if (accept && o) this.showToast('you picked ' + o.name + '. they\'ll see it in their offers.');
   }
 
   addFiles(files) {
@@ -669,15 +722,34 @@ class Component extends DCLogic {
   }
   setSell(k, v) { this.setState(s => ({ sell: { ...s.sell, [k]: v }, sellErr: '' })); }
 
-  publish = () => {
-    const sl = this.state.sell;
+  publish = async () => {
+    const sl = this.state.sell, user = this.state.user;
     if (!sl.photos.length) return this.setState({ sellErr: 'add at least one photo.' });
     if (!sl.title.trim()) return this.setState({ sellErr: 'give it a name.' });
     const p = Math.round(parseFloat(sl.price));
     if (!p) return this.setState({ sellErr: 'set a suggested price.' });
-    const id = 'n' + Date.now();
-    const l = { id, title: sl.title.trim().toLowerCase(), cat: sl.cat, price: p, cond: sl.cond, seller: 'you', pickup: sl.pickup, time: 'just now', desc: sl.desc.trim() || 'No details yet.', photos: sl.photos, offers: [], status: 'active', soldTo: null, mine: true, slotId: 'tc-' + id };
-    this.setState(s => ({ listings: [l, ...s.listings], sell: this.blankSell(), sellErr: '', dashTab: 'selling' }));
+    if (this.state.publishing) return;
+    this.setState({ publishing: true, sellErr: '' });
+    try {
+      // Photos go to storage under <user id>/; the listing stores their public URLs.
+      const bucket = sb.storage.from('listing-photos'), stamp = Date.now(), photos = [];
+      for (let i = 0; i < sl.photos.length; i++) {
+        const blob = await (await fetch(sl.photos[i])).blob();
+        const path = user.id + '/' + stamp + '-' + i + '.' + ((blob.type.split('/')[1] || 'jpg').replace('jpeg', 'jpg'));
+        const up = await bucket.upload(path, blob, { contentType: blob.type });
+        if (up.error) throw up.error;
+        photos.push(bucket.getPublicUrl(path).data.publicUrl);
+      }
+      const { error } = await sb.from('listings').insert({
+        seller_id: user.id, seller_name: user.name, title: sl.title.trim().toLowerCase(), cat: sl.cat, price: p,
+        cond: sl.cond, description: sl.desc.trim(), pickup: sl.pickup, photos
+      });
+      if (error) throw error;
+    } catch (e) {
+      return this.setState({ publishing: false, sellErr: "couldn't publish: " + (e.message || e) });
+    }
+    this.setState({ publishing: false, sell: this.blankSell(), dashTab: 'selling' });
+    await this.load();
     this.go('dashboard');
     this.showToast("it's on the cart. offers will show up here.");
   };
@@ -698,7 +770,7 @@ class Component extends DCLogic {
 
     const card = (l) => {
       const c = this.cat(l.cat);
-      const pend = l.offers.filter(o => o.status === 'pending').length;
+      const pend = l.pendingOffers;
       const fav = !!s.favs[l.id];
       return {
         id: l.id, title: l.title, price: '$' + l.price, bg: l.bg || c.bg, slotId: l.slotId,
@@ -723,10 +795,11 @@ class Component extends DCLogic {
     if (s.sort === 'low') feed = [...feed].sort((a, b) => a.price - b.price);
     if (s.sort === 'high') feed = [...feed].sort((a, b) => b.price - a.price);
 
-    const it = s.listings.find(l => l.id === s.itemId) || s.listings[0];
+    const it = s.listings.find(l => l.id === s.itemId) || s.listings[0] ||
+      { id: '', title: '', cat: 'fits', price: 0, cond: '', seller: ' ', pickup: '', time: '', desc: '', photos: [], offers: [], pendingOffers: 0, status: 'active', mine: false };
     const ic = card(it);
     const myOff = it.offers.find(o => o.mine);
-    const pendIt = it.offers.filter(o => o.status === 'pending').length;
+    const pendIt = it.pendingOffers;
     const amtNum = Math.round(parseFloat(s.offerAmt)) || 0;
     const quick = [[1, 'asking'], [0.9, '−10%'], [0.8, '−20%']].map(([f, lab]) => {
       const v = Math.round(it.price * f); const on = v === amtNum;
@@ -777,7 +850,7 @@ class Component extends DCLogic {
       };
     });
     const myOffers = [];
-    s.listings.forEach(l => { if (!l.mine) l.offers.forEach(o => { if (o.mine) myOffers.push({ ...card(l), seller: l.seller, asking: '$' + l.price, amount: '$' + o.amount, open: (e) => { e.stopPropagation(); e.preventDefault(); this.openItem(l.id); } }); }); });
+    s.listings.forEach(l => { if (!l.mine) l.offers.forEach(o => { if (o.mine) myOffers.push({ ...card(l), seller: l.seller, asking: '$' + l.price, amount: '$' + o.amount, statusLabel: o.status === 'accepted' ? 'you got it!' : o.status === 'declined' ? 'declined' : 'waiting on seller', open: (e) => { e.stopPropagation(); e.preventDefault(); this.openItem(l.id); } }); }); });
     const incoming = s.listings.filter(l => l.mine).reduce((n, l) => n + l.offers.filter(o => o.status === 'pending').length, 0);
 
     if (!this.marquee) {
@@ -806,8 +879,8 @@ class Component extends DCLogic {
       loggedIn: !!user, loggedOut: !user, userInitial: user ? user.name[0].toUpperCase() : '', userEmail: user ? user.email : '',
       hasIncoming: !!user && incoming > 0, incomingCount: incoming,
 
-      feed: feed.map(card), feedCount: feed.length + (feed.length === 1 ? ' thing' : ' things') + ' listed by students right now',
-      noResults: feed.length === 0, clearFilters: () => this.setState({ q: '', cat: 'all' }),
+      feed: feed.map(card), feedCount: !s.loaded ? 'loading the cart…' : feed.length + (feed.length === 1 ? ' thing' : ' things') + ' listed by students right now',
+      noResults: s.loaded && feed.length === 0, clearFilters: () => this.setState({ q: '', cat: 'all' }),
       sort: s.sort, onSort: (e) => this.setState({ sort: e.target.value }),
       gridCols: 'repeat(auto-fill, minmax(' + gridMin + 'px, 1fr))',
       catChips: this.CATS.map(c => ({ label: c.label, ...this.chip(s.cat === c.id, c.id === 'all' ? '#E0261B' : c.bg), onClick: () => this.setState({ cat: c.id }) })),
@@ -836,7 +909,7 @@ class Component extends DCLogic {
       sellCats: this.CATS.filter(c => c.id !== 'all').map(c => ({ label: c.label, ...this.chip(sl.cat === c.id, c.bg), onClick: () => this.setSell('cat', c.id) })),
       condChips: this.CONDS.map(c => ({ label: c, ...this.chip(sl.cond === c), onClick: () => this.setSell('cond', c) })),
       priceHint: 'Similar ' + sc.label + ' go for $' + rg[0] + '–$' + rg[1] + ' here.',
-      pickups: this.PICKUPS, publish: this.publish,
+      pickups: this.PICKUPS, publish: this.publish, publishLabel: s.publishing ? 'uploading…' : 'put it on the cart',
       preview: { bg: sc.bg, hasPhoto: sl.photos.length > 0, noPhoto: !sl.photos.length, photo: sl.photos[0], title: sl.title.trim().toLowerCase() || 'your thing', price: sl.price ? '$' + sl.price : '$—', meta: (user ? user.name : 'you') + ' · ' + sl.pickup },
 
       mine, mineCount: mine.length, myOffers, myOffersCount: myOffers.length, noMyOffers: myOffers.length === 0,
@@ -848,7 +921,8 @@ class Component extends DCLogic {
       loginOpen: s.loginOpen, isSignup: s.loginMode === 'signup',
       loginTitle: s.loginMode === 'signup' ? 'join the cart.' : 'welcome back.',
       loginSub: s.pending ? 'Log in with your USC email to keep going.' : 'Log in with your USC email to sell and make offers.',
-      loginBtn: s.loginMode === 'signup' ? 'create account' : 'log in',
+      loginBtn: s.loginBusy ? 'one sec…' : s.loginMode === 'signup' ? 'create account' : 'log in',
+      logout: async () => { await sb.auth.signOut(); this.go('home'); this.showToast('logged out. see you on the quad.'); },
       loginToggle: s.loginMode === 'signup' ? 'have an account? log in' : 'new here? sign up',
       toggleLoginMode: () => this.setState({ loginMode: s.loginMode === 'signup' ? 'login' : 'signup', loginErr: '' }),
       loginEmail: s.loginEmail, loginPw: s.loginPw, loginName: s.loginName, loginErr: s.loginErr, hasLoginErr: !!s.loginErr,

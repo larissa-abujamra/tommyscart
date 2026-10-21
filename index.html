@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&amp;family=DM+Mono:wght@400;500&amp;display=swap">
+<script src="./image-slot.js"></script>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#F7F3EE;-webkit-font-smoothing:antialiased}
+a{color:#E0261B}a:hover{color:#141210}
+button{font-family:inherit}
+input,textarea,select{font-family:inherit}
+@keyframes tc-marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@keyframes tc-pop{from{transform:translate(-50%,12px);opacity:0}to{transform:translate(-50%,0);opacity:1}}
+</style>
+</helmet>
+
+<div style="min-height:100vh;background:#F7F3EE;font-family:'Bricolage Grotesque',sans-serif;color:#141210;display:flex;flex-direction:column">
+
+  <header style="position:sticky;top:0;z-index:50;background:#F7F3EE;border-bottom:1px solid #E3DACD">
+    <div style="max-width:1320px;margin:0 auto;padding:12px clamp(16px,3vw,32px);display:flex;flex-wrap:wrap;align-items:center;gap:12px 20px">
+      <div onClick="{{ goHome }}" style="cursor:pointer;display:flex;align-items:flex-end;font-weight:800;font-size:28px;letter-spacing:-.05em;line-height:1;color:#E0261B;padding-bottom:2px">
+        <span>t</span><img src="assets/smiley.png" alt="o" style="width:.68em;height:.68em;margin:0 .02em .05em .01em"><span>mmy's cart</span>
+      </div>
+      <sc-if value="{{ showHeaderSearch }}" hint-placeholder-val="{{ false }}">
+        <div style="flex:1 1 280px;max-width:560px;order:{{ searchOrder }};display:flex;align-items:center;gap:10px;height:44px;padding:0 16px;background:#fff;border:1.5px solid #141210;border-radius:99px">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#141210" stroke-width="2.2"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>
+          <input value="{{ q }}" onChange="{{ onQ }}" placeholder="search lamps, fits, textbooks…" style="flex:1;min-width:0;border:0;outline:0;background:transparent;font-size:16px;color:#141210">
+        </div>
+      </sc-if>
+      <nav style="display:flex;align-items:center;gap:6px;margin-left:auto">
+        <button onClick="{{ goBrowse }}" style="height:40px;padding:0 14px;border:0;background:transparent;font-size:15px;font-weight:600;color:#141210;cursor:pointer;border-radius:99px" style-hover="background:#EDE6DB">browse</button>
+        <button onClick="{{ goDash }}" style="height:40px;padding:0 14px;border:0;background:transparent;font-size:15px;font-weight:600;color:#141210;cursor:pointer;border-radius:99px;display:flex;align-items:center;gap:6px" style-hover="background:#EDE6DB">
+          <span>your cart</span>
+          <sc-if value="{{ hasIncoming }}" hint-placeholder-val="{{ false }}"><span style="min-width:20px;height:20px;padding:0 6px;border-radius:99px;background:#E0261B;color:#fff;font-family:'DM Mono',monospace;font-size:11px;display:flex;align-items:center;justify-content:center">{{ incomingCount }}</span></sc-if>
+        </button>
+        <button onClick="{{ goSell }}" style="height:40px;padding:0 18px;border:0;background:#E0261B;color:#fff;font-size:15px;font-weight:700;cursor:pointer;border-radius:99px" style-hover="background:#C21C12">sell</button>
+        <sc-if value="{{ loggedOut }}" hint-placeholder-val="{{ true }}">
+          <button onClick="{{ openLogin }}" style="height:40px;padding:0 16px;border:1.5px solid #141210;background:transparent;color:#141210;font-size:15px;font-weight:600;cursor:pointer;border-radius:99px">log in</button>
+        </sc-if>
+        <sc-if value="{{ loggedIn }}" hint-placeholder-val="{{ false }}">
+          <button onClick="{{ goDash }}" title="{{ userEmail }}" style="width:40px;height:40px;border:0;border-radius:50%;background:#F4BFCB;color:#141210;font-weight:800;font-size:17px;cursor:pointer">{{ userInitial }}</button>
+        </sc-if>
+      </nav>
+    </div>
+  </header>
+
+  <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+    <section ref="{{ heroRef }}" style="position:relative;overflow:hidden;background:#E0261B;height:{{ heroH }};min-height:560px">
+      <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(780px,90%);display:flex;flex-direction:column;align-items:center;gap:22px;text-align:center;z-index:1;pointer-events:none">
+        <div style="font-family:'DM Mono',monospace;font-size:13px;color:#fff;padding:6px 14px;border:1.5px solid #fff;border-radius:99px">buy &amp; sell with people on campus</div>
+        <h1 style="margin:0;font-weight:800;font-size:clamp(60px,11vw,168px);letter-spacing:-.055em;line-height:.86;color:#EEB405;text-wrap:balance">{{ slogan }}</h1>
+        <p style="margin:0;font-size:clamp(17px,1.6vw,21px);line-height:1.4;color:#fff;max-width:500px;text-wrap:pretty">List your stuff in a minute. Classmates send offers. <br>You pick who gets it.</p>
+        <div style="pointer-events:auto;display:flex;flex-wrap:wrap;justify-content:center;gap:10px;width:100%;max-width:560px">
+          <div style="flex:1 1 260px;display:flex;align-items:center;gap:10px;height:56px;padding:0 20px;background:#fff;border-radius:99px">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#141210" stroke-width="2.2"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>
+            <input value="{{ q }}" onChange="{{ onQ }}" onKeyDown="{{ onSearchKey }}" placeholder="what are you hunting for?" style="flex:1;min-width:0;border:0;outline:0;background:transparent;font-size:17px;color:#141210">
+          </div>
+          <button onClick="{{ goSell }}" style="height:56px;padding:0 26px;border:0;border-radius:99px;background:#EEB405;color:#141210;font-weight:800;font-size:17px;letter-spacing:-.02em;cursor:pointer" style-hover="background:#F7C51E">start selling</button>
+        </div>
+      </div>
+
+      <sc-for list="{{ heroCards }}" as="c" hint-placeholder-count="0">
+        <div onPointerDown="{{ c.onDown }}" onClickCapture="{{ stopClick }}" style="position:absolute;left:{{ c.x }}%;top:{{ c.y }}%;width:{{ c.w }}px;transform:translate(-50%,-50%) rotate({{ c.rot }}deg);z-index:{{ c.z }};cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;display:flex;flex-direction:column;align-items:center;gap:10px">
+          <sc-if value="{{ c.isPhoto }}">
+            <div style="position:relative;width:100%;height:{{ c.h }}px;background:{{ c.bg }};border:6px solid #fff;border-radius:6px;box-shadow:0 18px 34px rgba(90,0,0,.32);overflow:hidden;color:#141210">
+              <image-slot id="{{ c.slotId }}" src="{{ c.src }}" shape="rect" placeholder="{{ c.ph }}"></image-slot>
+            </div>
+          </sc-if>
+          <sc-if value="{{ c.isSmiley }}">
+            <img src="assets/smiley-sticker.png" alt="" draggable="false" style="width:100%;height:auto;display:block;filter:drop-shadow(0 14px 22px rgba(90,0,0,.35));pointer-events:none">
+          </sc-if>
+          
+        </div>
+      </sc-for>
+
+    </section>
+
+    <div style="background:#EEB405;color:#141210;overflow:hidden;padding:14px 0;border-bottom:1px solid #E3DACD">{{ marquee }}</div>
+
+    <main id="browse" style="max-width:1320px;width:100%;margin:0 auto;padding:clamp(32px,5vw,64px) clamp(16px,3vw,32px) 24px;display:flex;flex-direction:column;gap:22px">
+      <div style="display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px">
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <h2 style="margin:0;font-weight:800;font-size:clamp(34px,5vw,60px);letter-spacing:-.05em;line-height:.9">fresh on the cart.</h2>
+          <div style="font-family:'DM Mono',monospace;font-size:13px;color:#5E554C">{{ feedCount }}</div>
+        </div>
+        <label style="display:flex;align-items:center;gap:8px;font-family:'DM Mono',monospace;font-size:13px">
+          <span>sort</span>
+          <select value="{{ sort }}" onChange="{{ onSort }}" style="height:38px;padding:0 12px;border:1.5px solid #141210;border-radius:99px;background:#fff;font-size:14px;color:#141210;cursor:pointer">
+            <option value="new">newest</option>
+            <option value="low">price, low to high</option>
+            <option value="high">price, high to low</option>
+          </select>
+        </label>
+      </div>
+
+      <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin:0 calc(-1 * clamp(16px,3vw,32px));padding-left:clamp(16px,3vw,32px);padding-right:clamp(16px,3vw,32px)">
+        <sc-for list="{{ catChips }}" as="ch" hint-placeholder-count="7">
+          <button onClick="{{ ch.onClick }}" style="flex:none;height:40px;padding:0 16px 0 10px;border-radius:99px;border:1.5px solid #141210;background:{{ ch.bgActive }};color:{{ ch.fg }};font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px">
+            <span style="width:18px;height:18px;border-radius:50%;background:{{ ch.dot }};box-shadow:0 0 0 1.5px {{ ch.ring }}"></span>
+            <span>{{ ch.label }}</span>
+          </button>
+        </sc-for>
+      </div>
+
+      <div style="display:grid;grid-template-columns:{{ gridCols }};gap:clamp(14px,2vw,24px) clamp(12px,1.6vw,20px)">
+        <sc-for list="{{ feed }}" as="c" hint-placeholder-count="8">
+          <div onClickCapture="{{ c.open }}" style="cursor:pointer;display:flex;flex-direction:column;gap:10px;min-width:0">
+            <div style="position:relative;aspect-ratio:4/5;background:{{ c.bg }};border-radius:6px;overflow:hidden;color:#141210">
+              <sc-if value="{{ c.hasPhoto }}"><img src="{{ c.photo }}" alt="{{ c.title }}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:{{ c.fit }};padding:{{ c.pad }};mix-blend-mode:{{ c.blend }}"></sc-if>
+              <sc-if value="{{ c.noPhoto }}"><image-slot id="{{ c.slotId }}" shape="rect" placeholder="drop a photo"></image-slot></sc-if>
+              <button data-fav="1" aria-label="save" style="position:absolute;top:10px;right:10px;width:38px;height:38px;border-radius:50%;border:0;background:#F7F3EE;display:flex;align-items:center;justify-content:center;cursor:pointer">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="{{ c.heartFill }}" stroke="{{ c.heartStroke }}" stroke-width="2"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path></svg>
+              </button>
+              <sc-if value="{{ c.isMine }}"><div style="position:absolute;top:12px;left:12px;font-family:'DM Mono',monospace;font-size:11px;background:#141210;color:#F7F3EE;padding:4px 9px;border-radius:99px">yours</div></sc-if>
+              <sc-if value="{{ c.hasOffers }}"><div style="position:absolute;left:10px;bottom:10px;font-family:'DM Mono',monospace;font-size:11px;background:#F7F3EE;color:#141210;padding:4px 9px;border-radius:99px">{{ c.offerLabel }}</div></sc-if>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px">
+              <div style="font-weight:600;font-size:16px;letter-spacing:-.02em;line-height:1.2;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ c.title }}</div>
+              <div style="font-family:'DM Mono',monospace;font-weight:500;font-size:15px;flex:none">{{ c.price }}</div>
+            </div>
+            <div style="font-family:'DM Mono',monospace;font-size:12px;color:#5E554C;margin-top:-6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ c.meta }}</div>
+          </div>
+        </sc-for>
+      </div>
+
+      <sc-if value="{{ noResults }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:60px 20px;display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center">
+          <img src="assets/smiley.png" alt="" style="width:64px;height:64px">
+          <div style="font-weight:800;font-size:28px;letter-spacing:-.04em">nothing like that yet.</div>
+          <button onClick="{{ clearFilters }}" style="height:40px;padding:0 18px;border:1.5px solid #141210;background:transparent;border-radius:99px;font-size:15px;font-weight:600;cursor:pointer">clear search</button>
+        </div>
+      </sc-if>
+    </main>
+
+    <section style="max-width: 1320px; width: 100%; margin: 0 auto; padding: clamp(40px,6vw,80px) clamp(16px,3vw,32px); position: relative">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:12px">
+        <div style="background:#F4BFCB;border-radius:10px;padding:28px;display:flex;flex-direction:column;gap:12px;min-height:240px">
+          <div style="font-family:'DM Mono',monospace;font-size:13px">01</div>
+          <div style="flex:1"></div>
+          <div style="font-weight:800;font-size:32px;letter-spacing:-.05em;line-height:.95">list it in a minute.</div>
+          <div style="font-size:16px;line-height:1.45;text-wrap:pretty">Snap a few photos, set a suggested price, pick a pickup spot.</div>
+        </div>
+        <div style="background:#C5D6E2;border-radius:10px;padding:28px;display:flex;flex-direction:column;gap:12px;min-height:240px">
+          <div style="font-family:'DM Mono',monospace;font-size:13px">02</div>
+          <div style="flex:1"></div>
+          <div style="font-weight:800;font-size:32px;letter-spacing:-.05em;line-height:.95">classmates make offers.</div>
+          <div style="font-size:16px;line-height:1.45;text-wrap:pretty">Anyone with a usc email can offer at, above or below your price.</div>
+        </div>
+        <div style="background:#E0261B;color:#fff;border-radius:10px;padding:28px;display:flex;flex-direction:column;gap:12px;min-height:240px;position:relative;overflow:hidden">
+          <div style="font-family:'DM Mono',monospace;font-size:13px">03</div>
+          
+          <div style="flex:1"></div>
+          <div style="font-weight:800;font-size:32px;letter-spacing:-.05em;line-height:.95;color:#EEB405">you pick who gets it.</div>
+          <div style="font-size:16px;line-height:1.45;text-wrap:pretty">Not the first, not the highest. Whoever you want. Then meet on campus.</div>
+        </div>
+      </div>
+    <img src="assets/smiley-sticker.png" alt="" style="position: absolute; top: -12px; width: 120px; height: 120px; transform: rotate(12deg); left: 914px"></section>
+  </sc-if>
+
+  <sc-if value="{{ isItem }}" hint-placeholder-val="{{ false }}">
+    <div style="max-width:1320px;width:100%;margin:0 auto;padding:20px clamp(16px,3vw,32px) 64px;display:flex;flex-direction:column;gap:18px">
+      <button onClick="{{ goHome }}" style="align-self:flex-start;height:36px;padding:0 12px 0 6px;border:0;background:transparent;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;color:#141210">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#141210" stroke-width="2.2"><path d="M15 5l-7 7 7 7"></path></svg>back to the cart
+      </button>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:clamp(24px,4vw,56px);align-items:start">
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="position:relative;aspect-ratio:4/5;background:{{ item.bg }};border-radius:8px;overflow:hidden;color:#141210">
+            <sc-if value="{{ item.hasPhoto }}"><img src="{{ item.mainPhoto }}" alt="{{ item.title }}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:{{ item.fit }};padding:{{ item.pad }};mix-blend-mode:{{ item.blend }}"></sc-if>
+            <sc-if value="{{ item.noPhoto }}"><image-slot id="{{ item.slotId }}" shape="rect" placeholder="drop a photo"></image-slot></sc-if>
+            <sc-if value="{{ item.isSold }}"><div style="position:absolute;top:16px;left:16px;font-family:'DM Mono',monospace;font-size:13px;background:#141210;color:#F7F3EE;padding:6px 12px;border-radius:99px">sold</div></sc-if>
+          </div>
+          <sc-if value="{{ item.hasThumbs }}">
+            <div style="display:flex;gap:8px;overflow-x:auto">
+              <sc-for list="{{ item.thumbs }}" as="t">
+                <img src="{{ t.src }}" onClick="{{ t.onClick }}" alt="" style="width:72px;height:90px;object-fit:cover;border-radius:4px;cursor:pointer;flex:none;outline:2px solid {{ t.ring }};outline-offset:2px">
+              </sc-for>
+            </div>
+          </sc-if>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:22px;position:sticky;top:90px">
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div style="display:flex;gap:8px;align-items:center">
+              <span style="width:14px;height:14px;border-radius:50%;background:{{ item.bg }};box-shadow:0 0 0 1.5px #141210"></span>
+              <span style="font-family:'DM Mono',monospace;font-size:13px">{{ item.catLabel }}</span>
+            </div>
+            <h1 style="margin:0;font-weight:800;font-size:clamp(36px,4.4vw,60px);letter-spacing:-.05em;line-height:.92;text-wrap:balance">{{ item.title }}</h1>
+            <div style="display:flex;align-items:baseline;gap:12px">
+              <div style="font-family:'DM Mono',monospace;font-weight:500;font-size:30px;color:#E0261B">{{ item.price }}</div>
+              <div style="font-family:'DM Mono',monospace;font-size:13px;color:#5E554C">suggested price · offers welcome</div>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;border-top:1.5px solid #141210">
+            <div style="display:flex;justify-content:space-between;gap:16px;padding:12px 0;border-bottom:1px solid #DED5C8;font-size:15px"><span style="color:#5E554C">condition</span><span style="font-weight:600">{{ item.cond }}</span></div>
+            <div style="display:flex;justify-content:space-between;gap:16px;padding:12px 0;border-bottom:1px solid #DED5C8;font-size:15px"><span style="color:#5E554C">pickup</span><span style="font-weight:600">{{ item.pickup }}</span></div>
+            <div style="display:flex;justify-content:space-between;gap:16px;padding:12px 0;border-bottom:1px solid #DED5C8;font-size:15px"><span style="color:#5E554C">listed</span><span style="font-weight:600">{{ item.time }}</span></div>
+          </div>
+          <div style="font-size:17px;line-height:1.5;text-wrap:pretty">{{ item.desc }}</div>
+
+          <div style="display:flex;align-items:center;gap:12px">
+            <div style="width:44px;height:44px;border-radius:50%;background:#F4BFCB;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px">{{ item.initial }}</div>
+            <div style="display:flex;flex-direction:column;gap:2px">
+              <div style="font-weight:700;font-size:16px">{{ item.seller }}</div>
+              <div style="font-family:'DM Mono',monospace;font-size:12px;color:#5E554C">verified usc student · {{ item.offerCount }}</div>
+            </div>
+          </div>
+
+          <sc-if value="{{ item.canOffer }}">
+            <div style="background:#fff;border-radius:12px;padding:clamp(18px,2.4vw,26px);display:flex;flex-direction:column;gap:14px;box-shadow:0 0 0 1px #E3DACD">
+              <div style="display:flex;flex-direction:column;gap:4px">
+                <div style="font-weight:800;font-size:26px;letter-spacing:-.04em">make an offer.</div>
+                <div style="font-size:14px;line-height:1.4;color:#5E554C">The seller sees every offer and picks who gets it. No bidding war, no auto-sell.</div>
+              </div>
+              <sc-if value="{{ item.hasMyOffer }}">
+                <div style="font-family:'DM Mono',monospace;font-size:13px;background:#FFF4D1;padding:10px 12px;border-radius:8px">{{ item.myOfferNote }}</div>
+              </sc-if>
+              <div style="display:flex;align-items:center;gap:6px;height:64px;padding:0 18px;border:1.5px solid #141210;border-radius:10px">
+                <span style="font-family:'DM Mono',monospace;font-size:26px">$</span>
+                <input value="{{ offerAmt }}" onChange="{{ onOfferAmt }}" inputmode="numeric" placeholder="0" style="flex:1;min-width:0;border:0;outline:0;font-family:'DM Mono',monospace;font-size:26px;background:transparent;color:#141210">
+              </div>
+              <div style="display:flex;flex-wrap:wrap;gap:6px">
+                <sc-for list="{{ item.quick }}" as="qk">
+                  <button onClick="{{ qk.onClick }}" style="height:34px;padding:0 12px;border-radius:99px;border:1.5px solid #141210;background:{{ qk.bg }};color:{{ qk.fg }};font-family:'DM Mono',monospace;font-size:12px;cursor:pointer">{{ qk.label }}</button>
+                </sc-for>
+              </div>
+              <textarea value="{{ offerMsg }}" onChange="{{ onOfferMsg }}" rows="2" placeholder="add a note: when can you meet?" style="resize:vertical;border:1.5px solid #D8CDBE;border-radius:10px;padding:12px 14px;font-size:16px;outline:0;background:#fff;color:#141210"></textarea>
+              <sc-if value="{{ hasOfferErr }}"><div style="font-size:14px;color:#E0261B;font-weight:600">{{ offerErr }}</div></sc-if>
+              <div style="display:flex;gap:8px">
+                <button onClick="{{ sendOffer }}" style="flex:1;height:54px;border:0;border-radius:99px;background:#E0261B;color:#fff;font-weight:700;font-size:17px;cursor:pointer" style-hover="background:#C21C12">{{ item.offerBtn }}</button>
+                <button onClick="{{ item.toggleFav }}" aria-label="save" style="width:54px;height:54px;border-radius:50%;border:1.5px solid #141210;background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="{{ item.heartFill }}" stroke="{{ item.heartStroke }}" stroke-width="2"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path></svg>
+                </button>
+              </div>
+            </div>
+          </sc-if>
+          <sc-if value="{{ item.isMine }}">
+            <div style="background:#141210;color:#F7F3EE;border-radius:12px;padding:22px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px">
+              <div style="display:flex;flex-direction:column;gap:4px"><div style="font-weight:800;font-size:24px;letter-spacing:-.04em">this one's yours.</div><div style="font-family:'DM Mono',monospace;font-size:13px">{{ item.mineNote }}</div></div>
+              <button onClick="{{ goDash }}" style="height:46px;padding:0 20px;border:0;border-radius:99px;background:#EEB405;color:#141210;font-weight:700;font-size:16px;cursor:pointer">see offers</button>
+            </div>
+          </sc-if>
+          <sc-if value="{{ item.isSold }}">
+            <div style="background:#EAE3D8;border-radius:12px;padding:22px;font-weight:700;font-size:20px;letter-spacing:-.03em">{{ item.soldNote }}</div>
+          </sc-if>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isSell }}" hint-placeholder-val="{{ false }}">
+    <div style="max-width:1180px;width:100%;margin:0 auto;padding:clamp(28px,4vw,56px) clamp(16px,3vw,32px) 72px;display:flex;flex-direction:column;gap:28px">
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <h1 style="margin:0;font-weight:800;font-size:clamp(40px,6vw,76px);letter-spacing:-.055em;line-height:.88">list something.</h1>
+        <div style="font-size:17px;color:#5E554C">Photos first. Classmates send offers, you pick who gets it.</div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:clamp(24px,4vw,48px);align-items:start">
+        <div style="display:flex;flex-direction:column;gap:22px;grid-column:span {{ formSpan }}">
+          <label onDrop="{{ onDrop }}" onDragOver="{{ onDragOver }}" onDragLeave="{{ onDragLeave }}" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;min-height:200px;padding:28px;border:2px dashed #141210;border-radius:12px;background:{{ dropBg }};cursor:pointer;text-align:center">
+            <input type="file" accept="image/*" multiple="" onChange="{{ onFile }}" style="display:none">
+            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#141210" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"></rect><circle cx="9" cy="10" r="1.6"></circle><path d="M21 16l-5-5-8 8"></path></svg>
+            <div style="font-weight:700;font-size:19px;letter-spacing:-.02em">drop photos or click to add</div>
+            <div style="font-family:'DM Mono',monospace;font-size:12px;color:#5E554C">up to 8 · first one is the cover · flat backdrops look best</div>
+          </label>
+          <sc-if value="{{ hasSellPhotos }}">
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px">
+              <sc-for list="{{ sellPhotos }}" as="p">
+                <div style="position:relative;aspect-ratio:4/5;border-radius:6px;overflow:hidden;background:#EAE3D8">
+                  <img src="{{ p.src }}" onClick="{{ p.makeCover }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;cursor:pointer">
+                  <sc-if value="{{ p.isCover }}"><div style="position:absolute;left:6px;bottom:6px;font-family:'DM Mono',monospace;font-size:10px;background:#EEB405;padding:2px 7px;border-radius:99px">cover</div></sc-if>
+                  <button onClick="{{ p.remove }}" aria-label="remove" style="position:absolute;top:6px;right:6px;width:26px;height:26px;border-radius:50%;border:0;background:#141210;color:#fff;font-size:14px;line-height:1;cursor:pointer">×</button>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <label style="display:flex;flex-direction:column;gap:8px">
+            <span style="font-weight:700;font-size:15px">what is it?</span>
+            <input value="{{ sell.title }}" onChange="{{ onSellTitle }}" placeholder="e.g. ikea desk lamp, white" style="height:50px;padding:0 14px;border:1.5px solid #141210;border-radius:10px;font-size:16px;outline:0;background:#fff;color:#141210">
+          </label>
+
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <span style="font-weight:700;font-size:15px">category</span>
+            <div style="display:flex;flex-wrap:wrap;gap:6px">
+              <sc-for list="{{ sellCats }}" as="ch">
+                <button onClick="{{ ch.onClick }}" style="height:38px;padding:0 14px 0 8px;border-radius:99px;border:1.5px solid #141210;background:{{ ch.bgActive }};color:{{ ch.fg }};font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:7px">
+                  <span style="width:16px;height:16px;border-radius:50%;background:{{ ch.dot }};box-shadow:0 0 0 1.5px {{ ch.ring }}"></span>{{ ch.label }}
+                </button>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <span style="font-weight:700;font-size:15px">condition</span>
+            <div style="display:flex;flex-wrap:wrap;gap:6px">
+              <sc-for list="{{ condChips }}" as="ch">
+                <button onClick="{{ ch.onClick }}" style="height:38px;padding:0 14px;border-radius:99px;border:1.5px solid #141210;background:{{ ch.bgActive }};color:{{ ch.fg }};font-size:14px;font-weight:600;cursor:pointer">{{ ch.label }}</button>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <span style="font-weight:700;font-size:15px">suggested price</span>
+            <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px">
+              <div style="display:flex;align-items:center;gap:6px;height:56px;width:180px;padding:0 16px;border:1.5px solid #141210;border-radius:10px;background:#fff">
+                <span style="font-family:'DM Mono',monospace;font-size:22px">$</span>
+                <input value="{{ sell.price }}" onChange="{{ onSellPrice }}" inputmode="numeric" placeholder="0" style="flex:1;min-width:0;border:0;outline:0;font-family:'DM Mono',monospace;font-size:22px;background:transparent;color:#141210">
+              </div>
+              <div style="font-size:14px;line-height:1.4;color:#5E554C;max-width:300px">{{ priceHint }} Buyers can offer above or below.</div>
+            </div>
+          </div>
+
+          <label style="display:flex;flex-direction:column;gap:8px">
+            <span style="font-weight:700;font-size:15px">details</span>
+            <textarea value="{{ sell.desc }}" onChange="{{ onSellDesc }}" rows="3" placeholder="size, flaws, why you're selling…" style="resize:vertical;padding:12px 14px;border:1.5px solid #141210;border-radius:10px;font-size:16px;outline:0;background:#fff;color:#141210"></textarea>
+          </label>
+
+          <label style="display:flex;flex-direction:column;gap:8px">
+            <span style="font-weight:700;font-size:15px">pickup spot</span>
+            <select value="{{ sell.pickup }}" onChange="{{ onSellPickup }}" style="height:50px;padding:0 12px;border:1.5px solid #141210;border-radius:10px;font-size:16px;background:#fff;color:#141210">
+              <option value="leavey library">leavey library</option>
+              <option value="doheny steps">doheny steps</option>
+              <option value="village">village</option>
+              <option value="vkc">vkc</option>
+              <option value="parkside">parkside</option>
+              <option value="tutor campus center">tutor campus center</option>
+            </select>
+          </label>
+
+          <sc-if value="{{ hasSellErr }}"><div style="font-size:15px;color:#E0261B;font-weight:600">{{ sellErr }}</div></sc-if>
+          <button onClick="{{ publish }}" style="height:58px;border:0;border-radius:99px;background:#E0261B;color:#fff;font-weight:800;font-size:18px;letter-spacing:-.02em;cursor:pointer" style-hover="background:#C21C12">put it on the cart</button>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:12px;position:sticky;top:90px">
+          <div style="font-family:'DM Mono',monospace;font-size:13px;color:#5E554C">preview</div>
+          <div style="background:#fff;border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px;box-shadow:0 0 0 1px #E3DACD">
+            <div style="position:relative;aspect-ratio:4/5;background:{{ preview.bg }};border-radius:6px;overflow:hidden;display:flex;align-items:center;justify-content:center">
+              <sc-if value="{{ preview.hasPhoto }}"><img src="{{ preview.photo }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"></sc-if>
+              <sc-if value="{{ preview.noPhoto }}"><img src="assets/smiley.png" alt="" style="width:64px;height:64px;opacity:.9"></sc-if>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px">
+              <div style="font-weight:600;font-size:16px;letter-spacing:-.02em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ preview.title }}</div>
+              <div style="font-family:'DM Mono',monospace;font-weight:500;font-size:15px">{{ preview.price }}</div>
+            </div>
+            <div style="font-family:'DM Mono',monospace;font-size:12px;color:#5E554C">{{ preview.meta }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isDash }}" hint-placeholder-val="{{ false }}">
+    <div style="max-width:1080px;width:100%;margin:0 auto;padding:clamp(28px,4vw,56px) clamp(16px,3vw,32px) 72px;display:flex;flex-direction:column;gap:24px">
+      <div style="display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px">
+        <h1 style="margin:0;font-weight:800;font-size:clamp(40px,6vw,76px);letter-spacing:-.055em;line-height:.88">your cart.</h1>
+        <div style="display:flex;gap:4px;padding:4px;border-radius:99px;background:#EAE3D8">
+          <button onClick="{{ tabSelling }}" style="height:40px;padding:0 18px;border:0;border-radius:99px;background:{{ tabSellBg }};color:{{ tabSellFg }};font-size:15px;font-weight:600;cursor:pointer">selling · {{ mineCount }}</button>
+          <button onClick="{{ tabBuying }}" style="height:40px;padding:0 18px;border:0;border-radius:99px;background:{{ tabBuyBg }};color:{{ tabBuyFg }};font-size:15px;font-weight:600;cursor:pointer">your offers · {{ myOffersCount }}</button>
+        </div>
+      </div>
+
+      <sc-if value="{{ showSelling }}">
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <sc-for list="{{ mine }}" as="m">
+            <div style="background:#fff;border-radius:14px;box-shadow:0 0 0 1px #E3DACD;overflow:hidden">
+              <div style="display:flex;gap:16px;padding:16px;align-items:center;flex-wrap:wrap">
+                <div onClickCapture="{{ m.open }}" style="position:relative;width:76px;height:95px;border-radius:6px;overflow:hidden;background:{{ m.bg }};flex:none;cursor:pointer;color:#141210">
+                  <sc-if value="{{ m.hasPhoto }}"><img src="{{ m.photo }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:{{ m.fit }};padding:{{ m.pad }};mix-blend-mode:{{ m.blend }}"></sc-if>
+                  <sc-if value="{{ m.noPhoto }}"><image-slot id="{{ m.slotId }}" shape="rect" placeholder=" "></image-slot></sc-if>
+                </div>
+                <div style="flex:1 1 200px;display:flex;flex-direction:column;gap:4px;min-width:0">
+                  <div style="font-weight:700;font-size:20px;letter-spacing:-.03em">{{ m.title }}</div>
+                  <div style="font-family:'DM Mono',monospace;font-size:13px;color:#5E554C">asking {{ m.price }} · {{ m.pickup }}</div>
+                </div>
+                <div style="font-family:'DM Mono',monospace;font-size:12px;padding:6px 12px;border-radius:99px;background:{{ m.statusBg }};color:{{ m.statusFg }}">{{ m.statusLabel }}</div>
+              </div>
+              <sc-if value="{{ m.noOffers }}">
+                <div style="padding:18px 16px;border-top:1px solid #EEE7DC;font-size:15px;color:#5E554C">No offers yet. They usually start rolling in within a day.</div>
+              </sc-if>
+              <sc-for list="{{ m.offers }}" as="o">
+                <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px 16px;padding:14px 16px;border-top:1px solid #EEE7DC;opacity:{{ o.opacity }}">
+                  <div style="width:40px;height:40px;border-radius:50%;background:{{ o.avBg }};display:flex;align-items:center;justify-content:center;font-weight:800;flex:none">{{ o.initial }}</div>
+                  <div style="flex:1 1 180px;display:flex;flex-direction:column;gap:3px;min-width:0">
+                    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                      <span style="font-weight:700;font-size:16px">{{ o.name }}</span>
+                      <span style="font-family:'DM Mono',monospace;font-size:12px;color:#5E554C">{{ o.time }}</span>
+                      <sc-if value="{{ o.isTop }}"><span style="font-family:'DM Mono',monospace;font-size:11px;background:#EEB405;padding:2px 8px;border-radius:99px">highest</span></sc-if>
+                    </div>
+                    <sc-if value="{{ o.hasMsg }}"><div style="font-size:15px;color:#3A332D">"{{ o.msg }}"</div></sc-if>
+                  </div>
+                  <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px">
+                    <div style="font-family:'DM Mono',monospace;font-weight:500;font-size:22px">{{ o.amountLabel }}</div>
+                    <div style="font-family:'DM Mono',monospace;font-size:11px;color:#5E554C">{{ o.vsAsk }}</div>
+                  </div>
+                  <sc-if value="{{ o.isPending }}">
+                    <div style="display:flex;gap:6px">
+                      <button onClick="{{ o.onDecline }}" style="height:40px;padding:0 14px;border:1.5px solid #141210;border-radius:99px;background:transparent;font-size:14px;font-weight:600;cursor:pointer">decline</button>
+                      <button onClick="{{ o.onAccept }}" style="height:40px;padding:0 16px;border:0;border-radius:99px;background:#E0261B;color:#fff;font-size:14px;font-weight:700;cursor:pointer" style-hover="background:#C21C12">sell to {{ o.first }}</button>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ o.notPending }}">
+                    <div style="font-family:'DM Mono',monospace;font-size:12px;font-weight:500;color:{{ o.statusColor }}">{{ o.statusText }}</div>
+                  </sc-if>
+                </div>
+              </sc-for>
+            </div>
+          </sc-for>
+          <button onClick="{{ goSell }}" style="align-self:flex-start;height:46px;padding:0 20px;border:1.5px dashed #141210;border-radius:99px;background:transparent;font-size:15px;font-weight:600;cursor:pointer">+ list something else</button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ showBuying }}">
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <sc-for list="{{ myOffers }}" as="b">
+            <div onClickCapture="{{ b.open }}" style="background:#fff;border-radius:14px;box-shadow:0 0 0 1px #E3DACD;padding:14px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;cursor:pointer">
+              <div style="position:relative;width:64px;height:80px;border-radius:6px;overflow:hidden;background:{{ b.bg }};flex:none;color:#141210"><sc-if value="{{ b.hasPhoto }}"><img src="{{ b.photo }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:{{ b.fit }};padding:{{ b.pad }};mix-blend-mode:{{ b.blend }}"></sc-if><sc-if value="{{ b.noPhoto }}"><image-slot id="{{ b.slotId }}" shape="rect" placeholder=" "></image-slot></sc-if></div>
+              <div style="flex:1 1 200px;display:flex;flex-direction:column;gap:4px">
+                <div style="font-weight:700;font-size:18px;letter-spacing:-.03em">{{ b.title }}</div>
+                <div style="font-family:'DM Mono',monospace;font-size:13px;color:#5E554C">{{ b.seller }} · asking {{ b.asking }}</div>
+              </div>
+              <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+                <div style="font-family:'DM Mono',monospace;font-weight:500;font-size:20px">{{ b.amount }}</div>
+                <div style="font-family:'DM Mono',monospace;font-size:11px;background:#FFF4D1;padding:3px 9px;border-radius:99px">waiting on seller</div>
+              </div>
+            </div>
+          </sc-for>
+          <sc-if value="{{ noMyOffers }}">
+            <div style="padding:48px 20px;display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center;background:#fff;border-radius:14px;box-shadow:0 0 0 1px #E3DACD">
+              <img src="assets/smiley.png" alt="" style="width:56px;height:56px">
+              <div style="font-weight:800;font-size:24px;letter-spacing:-.04em">no offers out yet.</div>
+              <button onClick="{{ goBrowse }}" style="height:42px;padding:0 18px;border:0;border-radius:99px;background:#E0261B;color:#fff;font-size:15px;font-weight:700;cursor:pointer">go browse</button>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+    </div>
+  </sc-if>
+
+  <div style="flex:1"></div>
+  <footer style="background:#E0261B;color:#fff">
+    <div style="max-width:1320px;margin:0 auto;padding:clamp(40px,6vw,72px) clamp(16px,3vw,32px) 28px;display:flex;flex-direction:column;gap:36px">
+      <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:24px">
+        <div style="display:flex;align-items:flex-end;font-weight:800;font-size:clamp(52px,9vw,120px);letter-spacing:-.055em;line-height:1">
+          <span>t</span><img src="assets/smiley.png" alt="o" style="width:.68em;height:.68em;margin:0 .02em .05em .01em"><span>mmy's cart</span>
+        </div>
+        <div style="display:flex;gap:20px;font-weight:600;font-size:16px">
+          <span onClick="{{ goBrowse }}" style="cursor:pointer">browse</span>
+          <span onClick="{{ goSell }}" style="cursor:pointer">sell</span>
+          <span onClick="{{ goDash }}" style="cursor:pointer">your cart</span>
+        </div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;border-top:1.5px solid rgba(255,255,255,.5);padding-top:18px;font-family:'DM Mono',monospace;font-size:12px">
+        <div>made by students, for students · usc emails only</div>
+        <div>independent student project · not affiliated with usc</div>
+      </div>
+    </div>
+  </footer>
+
+  <sc-if value="{{ loginOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeLogin }}" style="position:fixed;inset:0;z-index:100;background:rgba(20,18,16,.55);display:flex;align-items:center;justify-content:center;padding:16px">
+      <div onClick="{{ stopProp }}" style="width:100%;max-width:420px;background:#F7F3EE;border-radius:16px;padding:clamp(22px,4vw,32px);display:flex;flex-direction:column;gap:16px;position:relative">
+        <button onClick="{{ closeLogin }}" aria-label="close" style="position:absolute;top:14px;right:14px;width:36px;height:36px;border-radius:50%;border:0;background:#EAE3D8;font-size:18px;cursor:pointer">×</button>
+        <img src="assets/smiley-sticker.png" alt="" style="width:64px;height:64px;transform:rotate(-8deg)">
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div style="font-weight:800;font-size:34px;letter-spacing:-.05em;line-height:.95">{{ loginTitle }}</div>
+          <div style="font-size:15px;color:#5E554C">{{ loginSub }}</div>
+        </div>
+        <sc-if value="{{ isSignup }}">
+          <input value="{{ loginName }}" onChange="{{ onLoginName }}" placeholder="first name + last initial" style="height:50px;padding:0 14px;border:1.5px solid #141210;border-radius:10px;font-size:16px;outline:0;background:#fff;color:#141210">
+        </sc-if>
+        <input value="{{ loginEmail }}" onChange="{{ onLoginEmail }}" type="email" placeholder="you@usc.edu" style="height:50px;padding:0 14px;border:1.5px solid #141210;border-radius:10px;font-size:16px;outline:0;background:#fff;color:#141210">
+        <input value="{{ loginPw }}" onChange="{{ onLoginPw }}" onKeyDown="{{ onLoginKey }}" type="password" placeholder="password" style="height:50px;padding:0 14px;border:1.5px solid #141210;border-radius:10px;font-size:16px;outline:0;background:#fff;color:#141210">
+        <sc-if value="{{ hasLoginErr }}"><div style="font-size:14px;color:#E0261B;font-weight:600">{{ loginErr }}</div></sc-if>
+        <button onClick="{{ submitLogin }}" style="height:54px;border:0;border-radius:99px;background:#E0261B;color:#fff;font-weight:700;font-size:17px;cursor:pointer" style-hover="background:#C21C12">{{ loginBtn }}</button>
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+          <button onClick="{{ toggleLoginMode }}" style="border:0;background:transparent;padding:0;font-size:15px;font-weight:600;color:#E0261B;cursor:pointer">{{ loginToggle }}</button>
+          <div style="font-family:'DM Mono',monospace;font-size:11px;color:#5E554C">usc emails only</div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ hasToast }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:120;max-width:calc(100% - 32px);background:#141210;color:#F7F3EE;padding:14px 20px;border-radius:99px;display:flex;align-items:center;gap:10px;font-size:15px;font-weight:500;box-shadow:0 12px 30px rgba(0,0,0,.25);animation:tc-pop .25s ease-out">
+      <img src="assets/smiley.png" alt="" style="width:22px;height:22px;flex:none"><span>{{ toast }}</span>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;heroSlogan&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;have a nice haul.&quot;,&quot;one dorm over.&quot;,&quot;buy it off the quad.&quot;,&quot;pre-loved, post-finals.&quot;,&quot;someone wants it.&quot;,&quot;name your price.&quot;],&quot;default&quot;:&quot;have a nice haul.&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;gridDensity&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;airy&quot;,&quot;dense&quot;],&quot;default&quot;:&quot;airy&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  heroRef = React.createRef();
+  CATS = [
+    { id: 'all', label: 'everything', bg: '#141210' },
+    { id: 'fits', label: 'fits', bg: '#F4BFCB' },
+    { id: 'dorm', label: 'dorm', bg: '#EEB405' },
+    { id: 'tech', label: 'tech', bg: '#C5D6E2' },
+    { id: 'books', label: 'books', bg: '#EAE3D8' },
+    { id: 'tickets', label: 'music & tix', bg: '#6FA3E6' },
+    { id: 'bikes', label: 'bikes', bg: '#F28A6B' }
+  ];
+  RANGE = { fits: [15, 45], dorm: [10, 60], tech: [40, 180], books: [15, 60], tickets: [20, 80], bikes: [80, 250] };
+  CONDS = ['new with tags', 'like new', 'good', 'well-loved'];
+  PICKUPS = ['leavey library', 'doheny steps', 'village', 'vkc', 'parkside', 'tutor campus center'];
+  SLOGANS = ['have a nice haul.', 'one dorm over.', 'buy it off the quad.', 'pre-loved, post-finals.', 'someone wants it.', 'name your price.'];
+  AV = ['#F4BFCB', '#C5D6E2', '#EEB405', '#EAE3D8', '#6FA3E6'];
+
+  state = {
+    view: 'home', itemId: null, user: null,
+    loginOpen: false, loginMode: 'login', loginEmail: '', loginPw: '', loginName: '', loginErr: '', pending: null,
+    listings: this.seed(), cat: 'all', q: '', sort: 'new', favs: {},
+    offerAmt: '', offerMsg: '', offerErr: '', activePhoto: 0, dashTab: 'selling',
+    sell: this.blankSell(), sellErr: '', dragOver: false,
+    heroPos: {}, z: 20, vw: typeof window !== 'undefined' ? window.innerWidth : 1280, toast: null
+  };
+
+  blankSell() { return { title: '', price: '', cat: 'fits', cond: 'good', desc: '', pickup: 'leavey library', photos: [] }; }
+
+  seed() {
+    const L = (id, title, cat, price, cond, seller, pickup, time, desc, extra) => Object.assign({ id, title, cat, price, cond, seller, pickup, time, desc, photos: [], offers: [], status: 'active', soldTo: null, mine: false, slotId: 'tc-' + id }, extra || {});
+    return [
+      L('l1', 'comme des garçons converse, w8', 'fits', 65, 'like new', 'maya k.', 'village', '1h ago', 'Worn maybe five times. Hearts still bright, soles clean.', { photos: ['uploads/pasted-1792533674911-0.png'], cutout: true, bg: '#F4BFCB' }),
+      L('l11', 'rugby stripe polo, l', 'fits', 30, 'good', 'ben a.', 'doheny steps', '2h ago', 'Red and gold, so basically game-day mandatory.', { photos: ['uploads/pasted-1792533893712-0.png'], cutout: true, bg: '#C5D6E2' }),
+      L('l2', 'nespresso vertuo next', 'dorm', 70, 'like new', 'jordan p.', 'parkside', '3h ago', 'Descaled last week. Comes with 6 pods to get you through midterms.', { photos: ['uploads/pasted-1792533722469-0.png'], cutout: true, bg: '#C5D6E2' }),
+      L('l7', 'pink mushroom lamp', 'dorm', 22, 'like new', 'zoe h.', 'village', '4h ago', 'Pull-chain works, warm bulb included.', { photos: ['uploads/pasted-1792533820752-0.png'], cutout: true, bg: '#EAE3D8' }),
+      L('l10', 'pointelle cardigan, pink', 'fits', 28, 'like new', 'priya s.', 'leavey library', '5h ago', 'Size s, cropped. Tags removed but never really worn.', { photos: ['uploads/pasted-1792533882376-0.png'], cutout: true, bg: '#C5D6E2' }),
+      L('l16', 'airpods 4', 'tech', 90, 'like new', 'noah r.', 'vkc', '6h ago', 'Case, cable, box. Battery still great.', { photos: ['uploads/pasted-1792534009536-0.png'], cutout: true, bg: '#EAE3D8' }),
+      L('l5', 'priority cruiser bike', 'bikes', 260, 'good', 'lena w.', 'tutor campus center', '8h ago', 'Belt drive, no greasy chain. Medium frame, fits 5\'4"–5\'10".', { photos: ['uploads/pasted-1792533784119-0.png'], cutout: true, bg: '#F4BFCB' }),
+      L('l12', 'cable knit cardigan, brown', 'fits', 120, 'like new', 'ava l.', 'doheny steps', '10h ago', 'Cashmere blend, size m. Dry cleaned.', { photos: ['uploads/pasted-1792533908602-0.png'], cutout: true, bg: '#F4BFCB' }),
+      L('l3', 'jonas brothers, the album (vinyl)', 'tickets', 18, 'like new', 'chris d.', 'vkc', '12h ago', 'Played twice. Sleeve has no creases.', { photos: ['uploads/pasted-1792533734928-0.png'], cutout: true, bg: '#EAE3D8' }),
+      L('l13', 'ugg ultra mini, w7', 'fits', 85, 'good', 'emma j.', 'parkside', '1d ago', 'Chestnut. Sprayed with protector, minimal wear.', { photos: ['uploads/pasted-1792533948307-0.png'], cutout: true, bg: '#C5D6E2' }),
+      L('l6', 'pleated table lamp, orange', 'dorm', 14, 'like new', 'sam t.', 'village', '1d ago', 'Rechargeable, no cord. Lasts about a week.', { photos: ['uploads/pasted-1792533810844-0.png'], cutout: true, bg: '#C5D6E2' }),
+      L('l9', 'jansport backpack, navy', 'fits', 25, 'good', 'kai n.', 'leavey library', '1d ago', 'Laptop sleeve, leather bottom. Zippers all good.', { photos: ['uploads/pasted-1792533869607-0.png'], cutout: true, bg: '#F4BFCB' }),
+      L('l8', 'carbon road bike, 54cm', 'bikes', 480, 'good', 'marcus l.', 'tutor campus center', '2d ago', 'Electronic shifting, disc brakes. Serviced in August.', { photos: ['uploads/pasted-1792533850527-0.png'], cutout: true, bg: '#EAE3D8' }),
+      L('l14', 'ikea 2-door cabinet, oak', 'dorm', 40, 'good', 'mia c.', 'parkside', '2d ago', 'Already assembled. You\'ll need a friend and a car.', { photos: ['uploads/pasted-1792533974229-0.png'], cutout: true, bg: '#F4BFCB' }),
+      L('l15', 'wuthering heights, hardcover', 'books', 12, 'like new', 'ella f.', 'doheny steps', '3d ago', 'The pretty edition. No notes inside.', { photos: ['uploads/pasted-1792533999929-0.png'], cutout: true, bg: '#EAE3D8' }),
+      L('m1', 'jbl charge 5 speaker', 'tech', 80, 'like new', 'you', 'vkc', '4d ago', 'Loud enough for the whole floor. Waterproof, charger included.', { photos: ['uploads/pasted-1792534025394-0.png'], cutout: true, bg: '#C5D6E2', mine: true, offers: [
+        { id: 'o1', name: 'dana r.', amount: 70, msg: 'can meet at vkc after 2?', time: '1h ago', status: 'pending' },
+        { id: 'o2', name: 'marcus l.', amount: 80, msg: 'full price if you can do today', time: '3h ago', status: 'pending' },
+        { id: 'o3', name: 'kai n.', amount: 60, msg: '', time: '5h ago', status: 'pending' }] }),
+      L('m2', 'z lounge chair, oak', 'dorm', 140, 'good', 'you', 'village', '5d ago', 'Solid oak frame, grey cushions. Comfiest seat in the apartment.', { photos: ['uploads/pasted-1792533767488-0.png'], cutout: true, bg: '#EAE3D8', mine: true, offers: [
+        { id: 'o4', name: 'ella f.', amount: 115, msg: 'i have a car, can pick up anytime', time: '2h ago', status: 'pending' }] })
+    ];
+  }
+
+  heroBase(mobile) {
+    if (mobile) return [
+      { id: 'sm', smiley: true, label: 'good mood · free', x: 78, y: 12, w: 84, rot: -10 }
+    ];
+    return [
+      { id: 'sm', smiley: true, label: 'good mood · free', x: 84, y: 76, w: 170, rot: -10 }
+    ];
+  }
+
+  componentDidMount() {
+    this.onResize = () => this.setState({ vw: window.innerWidth });
+    window.addEventListener('resize', this.onResize);
+  }
+  componentWillUnmount() {
+    window.removeEventListener('resize', this.onResize);
+    window.removeEventListener('pointermove', this.onMove);
+    window.removeEventListener('pointerup', this.onUp);
+    clearTimeout(this.toastT);
+  }
+
+  isMobile() { return this.state.vw < 720; }
+  posKey(id) { return (this.isMobile() ? 'm:' : 'd:') + id; }
+
+  startDrag = (base, idx) => (e) => {
+    if (e.button && e.button !== 0) return;
+    const el = this.heroRef.current; if (!el) return;
+    const key = this.posKey(base.id);
+    const cur = this.state.heroPos[key] || { x: base.x, y: base.y };
+    const z = this.state.z + 1;
+    this.drag = { key, sx: e.clientX, sy: e.clientY, ox: cur.x, oy: cur.y, rect: el.getBoundingClientRect() };
+    this.setState(s => ({ z, heroPos: { ...s.heroPos, [key]: { x: cur.x, y: cur.y, z } } }));
+    window.addEventListener('pointermove', this.onMove);
+    window.addEventListener('pointerup', this.onUp);
+  };
+  onMove = (e) => {
+    const d = this.drag; if (!d) return;
+    const x = Math.max(2, Math.min(98, d.ox + (e.clientX - d.sx) / d.rect.width * 100));
+    const y = Math.max(4, Math.min(96, d.oy + (e.clientY - d.sy) / d.rect.height * 100));
+    this.setState(s => ({ heroPos: { ...s.heroPos, [d.key]: { ...s.heroPos[d.key], x, y } } }));
+  };
+  onUp = () => {
+    this.drag = null;
+    window.removeEventListener('pointermove', this.onMove);
+    window.removeEventListener('pointerup', this.onUp);
+  };
+
+  go(view, extra) { this.setState({ view, ...(extra || {}) }); window.scrollTo(0, 0); }
+  scrollToBrowse() {
+    setTimeout(() => { const el = document.getElementById('browse'); if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 70, behavior: 'smooth' }); }, 30);
+  }
+  requireLogin(fn) {
+    if (this.state.user) fn();
+    else this.setState({ loginOpen: true, pending: fn, loginErr: '' });
+  }
+  showToast(msg) {
+    clearTimeout(this.toastT);
+    this.setState({ toast: msg });
+    this.toastT = setTimeout(() => this.setState({ toast: null }), 3400);
+  }
+  toggleFav(id) { this.setState(s => ({ favs: { ...s.favs, [id]: !s.favs[id] } })); }
+  openItem(id) {
+    const l = this.state.listings.find(x => x.id === id);
+    const mineOffer = l.offers.find(o => o.mine);
+    this.go('item', { itemId: id, activePhoto: 0, offerErr: '', offerMsg: '', offerAmt: String(mineOffer ? mineOffer.amount : l.price) });
+  }
+  sellerName(l) { return l.mine ? (this.state.user ? this.state.user.name + ' (you)' : 'you') : l.seller; }
+  cat(id) { return this.CATS.find(c => c.id === id) || this.CATS[1]; }
+
+  submitLogin = () => {
+    const s = this.state;
+    const email = s.loginEmail.trim().toLowerCase();
+    if (!/^[^@\s]+@usc\.edu$/.test(email)) return this.setState({ loginErr: 'use your @usc.edu email' });
+    if (s.loginPw.length < 6) return this.setState({ loginErr: 'password needs 6+ characters' });
+    if (s.loginMode === 'signup' && !s.loginName.trim()) return this.setState({ loginErr: 'add your name' });
+    const local = email.split('@')[0].split(/[._0-9]/).filter(Boolean);
+    const name = s.loginMode === 'signup' ? s.loginName.trim().toLowerCase() : ((local[0] || 'trojan') + (local[1] ? ' ' + local[1][0] + '.' : ''));
+    const fn = s.pending;
+    this.setState({ user: { name, email }, loginOpen: false, pending: null, loginPw: '', loginErr: '' }, () => {
+      if (fn) fn(); else this.showToast('welcome to the cart, ' + name.split(' ')[0] + '.');
+    });
+  };
+
+  sendOffer = () => this.requireLogin(() => {
+    const s = this.state;
+    const amt = Math.round(parseFloat(s.offerAmt));
+    if (!amt || amt < 1) return this.setState({ offerErr: 'enter an amount' });
+    const it = s.listings.find(l => l.id === s.itemId);
+    const had = it.offers.some(o => o.mine);
+    this.setState(st => ({
+      offerErr: '', offerMsg: '',
+      listings: st.listings.map(l => l.id !== st.itemId ? l : { ...l, offers: [{ id: 'u' + Date.now(), name: st.user.name, amount: amt, msg: st.offerMsg.trim(), time: 'just now', status: 'pending', mine: true }, ...l.offers.filter(o => !o.mine)] })
+    }));
+    this.showToast(had ? 'offer updated to $' + amt + '.' : '$' + amt + ' offer sent. ' + it.seller + ' picks who gets it.');
+  });
+
+  decide(lid, oid, accept) {
+    let buyer = '';
+    this.setState(s => ({
+      listings: s.listings.map(l => {
+        if (l.id !== lid) return l;
+        if (!accept) return { ...l, offers: l.offers.map(o => o.id === oid ? { ...o, status: 'declined' } : o) };
+        const o = l.offers.find(x => x.id === oid); buyer = o.name;
+        return { ...l, status: 'sold', soldTo: o.name, offers: l.offers.map(x => ({ ...x, status: x.id === oid ? 'accepted' : (x.status === 'pending' ? 'declined' : x.status) })) };
+      })
+    }), () => { if (accept) this.showToast('you picked ' + buyer + '. we opened a chat to set up pickup.'); });
+  }
+
+  addFiles(files) {
+    const room = 8 - this.state.sell.photos.length;
+    Array.from(files || []).filter(f => f.type && f.type.indexOf('image/') === 0).slice(0, room).forEach(f => {
+      const r = new FileReader();
+      r.onload = () => this.setState(s => ({ sellErr: '', sell: { ...s.sell, photos: [...s.sell.photos, r.result].slice(0, 8) } }));
+      r.readAsDataURL(f);
+    });
+  }
+  setSell(k, v) { this.setState(s => ({ sell: { ...s.sell, [k]: v }, sellErr: '' })); }
+
+  publish = () => {
+    const sl = this.state.sell;
+    if (!sl.photos.length) return this.setState({ sellErr: 'add at least one photo.' });
+    if (!sl.title.trim()) return this.setState({ sellErr: 'give it a name.' });
+    const p = Math.round(parseFloat(sl.price));
+    if (!p) return this.setState({ sellErr: 'set a suggested price.' });
+    const id = 'n' + Date.now();
+    const l = { id, title: sl.title.trim().toLowerCase(), cat: sl.cat, price: p, cond: sl.cond, seller: 'you', pickup: sl.pickup, time: 'just now', desc: sl.desc.trim() || 'No details yet.', photos: sl.photos, offers: [], status: 'active', soldTo: null, mine: true, slotId: 'tc-' + id };
+    this.setState(s => ({ listings: [l, ...s.listings], sell: this.blankSell(), sellErr: '', dashTab: 'selling' }));
+    this.go('dashboard');
+    this.showToast("it's on the cart. offers will show up here.");
+  };
+
+  chip(active, dot) {
+    return { bgActive: active ? '#141210' : 'transparent', fg: active ? '#F7F3EE' : '#141210', dot: dot, ring: active ? '#F7F3EE' : '#141210' };
+  }
+
+  renderVals() {
+    const s = this.state, user = s.user, mobile = this.isMobile();
+    const slogan = this.props.heroSlogan ?? this.SLOGANS[0];
+    const gridMin = (this.props.gridDensity ?? 'airy') === 'dense' ? (mobile ? 140 : 170) : (mobile ? 150 : 230);
+
+    const heroCards = this.heroBase(mobile).map((b, i) => {
+      const p = s.heroPos[this.posKey(b.id)] || {};
+      return { ...b, x: p.x ?? b.x, y: p.y ?? b.y, z: p.z ?? (2 + i), h: Math.round(b.w * 1.22), isPhoto: !b.smiley, isSmiley: !!b.smiley, slotId: 'hero-' + b.id, ph: b.label, onDown: this.startDrag(b, i) };
+    });
+
+    const card = (l) => {
+      const c = this.cat(l.cat);
+      const pend = l.offers.filter(o => o.status === 'pending').length;
+      const fav = !!s.favs[l.id];
+      return {
+        id: l.id, title: l.title, price: '$' + l.price, bg: l.bg || c.bg, slotId: l.slotId,
+        fit: l.cutout ? 'contain' : 'cover', pad: l.cutout ? '9%' : '0', blend: l.cutout ? 'multiply' : 'normal',
+        hasPhoto: l.photos.length > 0, noPhoto: l.photos.length === 0, photo: l.photos[0],
+        meta: this.sellerName(l) + ' · ' + l.pickup, isMine: l.mine,
+        hasOffers: pend > 0, offerLabel: pend + (pend > 1 ? ' offers' : ' offer'),
+        heartFill: fav ? '#E0261B' : 'none', heartStroke: fav ? '#E0261B' : '#141210',
+        open: (e) => {
+          e.stopPropagation(); e.preventDefault();
+          const t = e.target;
+          if (t && t.closest && t.closest('[data-fav]')) return this.toggleFav(l.id);
+          this.openItem(l.id);
+        }
+      };
+    };
+
+    let feed = s.listings.filter(l => l.status !== 'sold' && (!l.mine || user));
+    if (s.cat !== 'all') feed = feed.filter(l => l.cat === s.cat);
+    const q = s.q.trim().toLowerCase();
+    if (q) feed = feed.filter(l => (l.title + ' ' + l.cat + ' ' + l.seller + ' ' + l.pickup).toLowerCase().indexOf(q) >= 0);
+    if (s.sort === 'low') feed = [...feed].sort((a, b) => a.price - b.price);
+    if (s.sort === 'high') feed = [...feed].sort((a, b) => b.price - a.price);
+
+    const it = s.listings.find(l => l.id === s.itemId) || s.listings[0];
+    const ic = card(it);
+    const myOff = it.offers.find(o => o.mine);
+    const pendIt = it.offers.filter(o => o.status === 'pending').length;
+    const amtNum = Math.round(parseFloat(s.offerAmt)) || 0;
+    const quick = [[1, 'asking'], [0.9, '−10%'], [0.8, '−20%']].map(([f, lab]) => {
+      const v = Math.round(it.price * f); const on = v === amtNum;
+      return { label: lab + ' · $' + v, bg: on ? '#141210' : 'transparent', fg: on ? '#F7F3EE' : '#141210', onClick: () => this.setState({ offerAmt: String(v), offerErr: '' }) };
+    });
+    const photos = it.photos;
+    const item = {
+      ...ic, cond: it.cond, pickup: it.pickup, time: it.time, desc: it.desc, catLabel: this.cat(it.cat).label,
+      seller: this.sellerName(it), initial: (it.mine && user ? user.name : it.seller)[0].toUpperCase(),
+      mainPhoto: photos[s.activePhoto] || photos[0], hasThumbs: photos.length > 1,
+      thumbs: photos.map((p, i) => ({ src: p, ring: i === s.activePhoto ? '#141210' : 'transparent', onClick: () => this.setState({ activePhoto: i }) })),
+      isMine: it.mine && it.status !== 'sold', isSold: it.status === 'sold', canOffer: !it.mine && it.status !== 'sold',
+      offerCount: pendIt ? pendIt + (pendIt > 1 ? ' offers so far' : ' offer so far') : 'no offers yet',
+      hasMyOffer: !!myOff, myOfferNote: myOff ? 'you offered $' + myOff.amount + ' · waiting on ' + it.seller : '',
+      offerBtn: myOff ? 'update offer' : 'send offer', quick,
+      toggleFav: () => this.toggleFav(it.id),
+      mineNote: pendIt ? pendIt + ' pending offer' + (pendIt > 1 ? 's' : '') : 'no offers yet',
+      soldNote: 'sold to ' + it.soldTo + '.'
+    };
+
+    const sl = s.sell, sc = this.cat(sl.cat), rg = this.RANGE[sl.cat];
+
+    const mine = s.listings.filter(l => l.mine).map(l => {
+      const c = card(l);
+      const sorted = [...l.offers].sort((a, b) => b.amount - a.amount);
+      const top = sorted.find(o => o.status === 'pending');
+      const pend = l.offers.filter(o => o.status === 'pending').length;
+      const sold = l.status === 'sold';
+      return {
+        ...c, pickup: l.pickup, open: (e) => { e.stopPropagation(); e.preventDefault(); this.openItem(l.id); },
+        statusLabel: sold ? 'sold to ' + l.soldTo : (pend ? pend + ' pending' : 'live'),
+        statusBg: sold ? '#141210' : (pend ? '#EEB405' : '#EAE3D8'), statusFg: sold ? '#F7F3EE' : '#141210',
+        noOffers: l.offers.length === 0,
+        offers: sorted.map((o, i) => {
+          const d = o.amount - l.price;
+          return {
+            ...o, amountLabel: '$' + o.amount, initial: o.name[0].toUpperCase(), first: o.name.split(' ')[0],
+            avBg: this.AV[i % this.AV.length], hasMsg: !!o.msg,
+            vsAsk: d === 0 ? 'asking price' : (d > 0 ? '+$' + d + ' over' : '−$' + (-d) + ' under'),
+            isTop: !sold && top && top.id === o.id && pend > 1,
+            isPending: o.status === 'pending', notPending: o.status !== 'pending',
+            statusText: o.status === 'accepted' ? '✓ you picked them' : 'declined',
+            statusColor: o.status === 'accepted' ? '#E0261B' : '#8A8178',
+            opacity: o.status === 'declined' ? 0.5 : 1,
+            onAccept: () => this.decide(l.id, o.id, true), onDecline: () => this.decide(l.id, o.id, false)
+          };
+        })
+      };
+    });
+    const myOffers = [];
+    s.listings.forEach(l => { if (!l.mine) l.offers.forEach(o => { if (o.mine) myOffers.push({ ...card(l), seller: l.seller, asking: '$' + l.price, amount: '$' + o.amount, open: (e) => { e.stopPropagation(); e.preventDefault(); this.openItem(l.id); } }); }); });
+    const incoming = s.listings.filter(l => l.mine).reduce((n, l) => n + l.offers.filter(o => o.status === 'pending').length, 0);
+
+    if (!this.marquee) {
+      const row = (k) => React.createElement('div', { key: k, style: { display: 'flex', alignItems: 'center', gap: 28, paddingRight: 28 } },
+        [...this.SLOGANS, ...this.SLOGANS].flatMap((t, i) => [
+          React.createElement('span', { key: 't' + i, style: { fontWeight: 800, fontSize: 26, letterSpacing: '-.04em', whiteSpace: 'nowrap' } }, t),
+          React.createElement('img', { key: 'i' + i, src: 'assets/smiley.png', alt: '', style: { width: 24, height: 24 } })
+        ]));
+      this.marquee = React.createElement('div', { style: { display: 'flex', width: 'max-content', animation: 'tc-marquee 50s linear infinite' } }, [row(0), row(1)]);
+    }
+
+    return {
+      heroRef: this.heroRef, marquee: this.marquee, slogan, heroCards,
+      heroH: mobile ? '660px' : 'clamp(620px, 88vh, 880px)',
+      stopClick: (e) => { e.stopPropagation(); e.preventDefault(); },
+      stopProp: (e) => e.stopPropagation(),
+      isHome: s.view === 'home', isItem: s.view === 'item', isSell: s.view === 'sell', isDash: s.view === 'dashboard',
+      showHeaderSearch: s.view !== 'home', searchOrder: mobile ? 3 : 0,
+      q: s.q, onQ: (e) => { const v = e.target.value; this.setState({ q: v, view: s.view === 'item' || s.view === 'dashboard' || s.view === 'sell' ? 'home' : s.view }); if (s.view !== 'home') this.scrollToBrowse(); },
+      onSearchKey: (e) => { if (e.key === 'Enter') this.scrollToBrowse(); },
+      goHome: () => this.go('home'),
+      goBrowse: () => { if (s.view !== 'home') this.go('home'); this.scrollToBrowse(); },
+      goSell: () => this.requireLogin(() => this.go('sell')),
+      goDash: () => this.requireLogin(() => this.go('dashboard')),
+      openLogin: () => this.setState({ loginOpen: true, pending: null, loginErr: '' }),
+      loggedIn: !!user, loggedOut: !user, userInitial: user ? user.name[0].toUpperCase() : '', userEmail: user ? user.email : '',
+      hasIncoming: !!user && incoming > 0, incomingCount: incoming,
+
+      feed: feed.map(card), feedCount: feed.length + (feed.length === 1 ? ' thing' : ' things') + ' listed by students right now',
+      noResults: feed.length === 0, clearFilters: () => this.setState({ q: '', cat: 'all' }),
+      sort: s.sort, onSort: (e) => this.setState({ sort: e.target.value }),
+      gridCols: 'repeat(auto-fill, minmax(' + gridMin + 'px, 1fr))',
+      catChips: this.CATS.map(c => ({ label: c.label, ...this.chip(s.cat === c.id, c.id === 'all' ? '#E0261B' : c.bg), onClick: () => this.setState({ cat: c.id }) })),
+
+      item, offerAmt: s.offerAmt, offerMsg: s.offerMsg, offerErr: s.offerErr, hasOfferErr: !!s.offerErr,
+      onOfferAmt: (e) => this.setState({ offerAmt: e.target.value.replace(/[^0-9]/g, ''), offerErr: '' }),
+      onOfferMsg: (e) => this.setState({ offerMsg: e.target.value }),
+      sendOffer: this.sendOffer,
+
+      sell: sl, sellErr: s.sellErr, hasSellErr: !!s.sellErr, formSpan: mobile ? 1 : 2,
+      dropBg: s.dragOver ? '#FFF4D1' : '#fff',
+      onFile: (e) => { this.addFiles(e.target.files); e.target.value = ''; },
+      onDrop: (e) => { e.preventDefault(); this.setState({ dragOver: false }); this.addFiles(e.dataTransfer.files); },
+      onDragOver: (e) => { e.preventDefault(); if (!s.dragOver) this.setState({ dragOver: true }); },
+      onDragLeave: () => this.setState({ dragOver: false }),
+      hasSellPhotos: sl.photos.length > 0,
+      sellPhotos: sl.photos.map((p, i) => ({
+        src: p, isCover: i === 0,
+        remove: (e) => { e.preventDefault(); e.stopPropagation(); this.setSell('photos', sl.photos.filter((_, j) => j !== i)); },
+        makeCover: () => this.setSell('photos', [p, ...sl.photos.filter((_, j) => j !== i)])
+      })),
+      onSellTitle: (e) => this.setSell('title', e.target.value),
+      onSellPrice: (e) => this.setSell('price', e.target.value.replace(/[^0-9]/g, '')),
+      onSellDesc: (e) => this.setSell('desc', e.target.value),
+      onSellPickup: (e) => this.setSell('pickup', e.target.value),
+      sellCats: this.CATS.filter(c => c.id !== 'all').map(c => ({ label: c.label, ...this.chip(sl.cat === c.id, c.bg), onClick: () => this.setSell('cat', c.id) })),
+      condChips: this.CONDS.map(c => ({ label: c, ...this.chip(sl.cond === c), onClick: () => this.setSell('cond', c) })),
+      priceHint: 'Similar ' + sc.label + ' go for $' + rg[0] + '–$' + rg[1] + ' here.',
+      pickups: this.PICKUPS, publish: this.publish,
+      preview: { bg: sc.bg, hasPhoto: sl.photos.length > 0, noPhoto: !sl.photos.length, photo: sl.photos[0], title: sl.title.trim().toLowerCase() || 'your thing', price: sl.price ? '$' + sl.price : '$—', meta: (user ? user.name : 'you') + ' · ' + sl.pickup },
+
+      mine, mineCount: mine.length, myOffers, myOffersCount: myOffers.length, noMyOffers: myOffers.length === 0,
+      showSelling: s.dashTab === 'selling', showBuying: s.dashTab === 'buying',
+      tabSelling: () => this.setState({ dashTab: 'selling' }), tabBuying: () => this.setState({ dashTab: 'buying' }),
+      tabSellBg: s.dashTab === 'selling' ? '#141210' : 'transparent', tabSellFg: s.dashTab === 'selling' ? '#F7F3EE' : '#141210',
+      tabBuyBg: s.dashTab === 'buying' ? '#141210' : 'transparent', tabBuyFg: s.dashTab === 'buying' ? '#F7F3EE' : '#141210',
+
+      loginOpen: s.loginOpen, isSignup: s.loginMode === 'signup',
+      loginTitle: s.loginMode === 'signup' ? 'join the cart.' : 'welcome back.',
+      loginSub: s.pending ? 'Log in with your USC email to keep going.' : 'Log in with your USC email to sell and make offers.',
+      loginBtn: s.loginMode === 'signup' ? 'create account' : 'log in',
+      loginToggle: s.loginMode === 'signup' ? 'have an account? log in' : 'new here? sign up',
+      toggleLoginMode: () => this.setState({ loginMode: s.loginMode === 'signup' ? 'login' : 'signup', loginErr: '' }),
+      loginEmail: s.loginEmail, loginPw: s.loginPw, loginName: s.loginName, loginErr: s.loginErr, hasLoginErr: !!s.loginErr,
+      onLoginEmail: (e) => this.setState({ loginEmail: e.target.value, loginErr: '' }),
+      onLoginPw: (e) => this.setState({ loginPw: e.target.value, loginErr: '' }),
+      onLoginName: (e) => this.setState({ loginName: e.target.value, loginErr: '' }),
+      onLoginKey: (e) => { if (e.key === 'Enter') this.submitLogin(); },
+      submitLogin: this.submitLogin,
+      closeLogin: () => this.setState({ loginOpen: false, pending: null }),
+
+      toast: s.toast, hasToast: !!s.toast
+    };
+  }
+}
+</script>
+</body>
+</html>

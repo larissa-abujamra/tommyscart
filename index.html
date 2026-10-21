@@ -394,8 +394,9 @@ select{-webkit-appearance:none;appearance:none;background-image:url("data:image/
         <h1 style="margin:0;font-weight:800;font-size:clamp(40px,6vw,76px);letter-spacing:-.055em;line-height:.88">your cart.</h1>
         <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px">
           <div style="display:flex;gap:4px;padding:4px;border-radius:99px;background:#EAE3D8">
-            <button onClick="{{ tabSelling }}" style="height:40px;padding:0 18px;border:0;border-radius:99px;background:{{ tabSellBg }};color:{{ tabSellFg }};font-size:15px;font-weight:600;cursor:pointer">selling · {{ mineCount }}</button>
-            <button onClick="{{ tabBuying }}" style="height:40px;padding:0 18px;border:0;border-radius:99px;background:{{ tabBuyBg }};color:{{ tabBuyFg }};font-size:15px;font-weight:600;cursor:pointer">your offers · {{ myOffersCount }}</button>
+            <button onClick="{{ tabSelling }}" style="height:40px;padding:0 14px;border:0;border-radius:99px;background:{{ tabSellBg }};color:{{ tabSellFg }};font-size:15px;font-weight:600;cursor:pointer">selling · {{ mineCount }}</button>
+            <button onClick="{{ tabLiked }}" style="height:40px;padding:0 14px;border:0;border-radius:99px;background:{{ tabLikedBg }};color:{{ tabLikedFg }};font-size:15px;font-weight:600;cursor:pointer">liked · {{ likedCount }}</button>
+            <button onClick="{{ tabBuying }}" style="height:40px;padding:0 14px;border:0;border-radius:99px;background:{{ tabBuyBg }};color:{{ tabBuyFg }};font-size:15px;font-weight:600;cursor:pointer">your bids · {{ myOffersCount }}</button>
           </div>
           <button onClick="{{ logout }}" style="height:40px;padding:0 16px;border:1.5px solid #141210;border-radius:99px;background:transparent;color:#141210;font-size:14px;font-weight:600;cursor:pointer">log out</button>
         </div>
@@ -451,6 +452,33 @@ select{-webkit-appearance:none;appearance:none;background-image:url("data:image/
         </div>
       </sc-if>
 
+      <sc-if value="{{ showLiked }}">
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <sc-for list="{{ liked }}" as="f">
+            <div onClickCapture="{{ f.open }}" style="background:#fff;border-radius:14px;box-shadow:0 0 0 1px #E3DACD;padding:14px;display:flex;align-items:center;gap:16px;cursor:pointer;opacity:{{ f.opacity }}">
+              <div style="position:relative;width:64px;height:80px;border-radius:6px;overflow:hidden;background:{{ f.bg }};flex:none;color:#141210"><sc-if value="{{ f.hasPhoto }}"><img src="{{ f.photo }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:{{ f.fit }};padding:{{ f.pad }};mix-blend-mode:{{ f.blend }}"></sc-if><sc-if value="{{ f.noPhoto }}"><image-slot id="{{ f.slotId }}" shape="rect" placeholder=" "></image-slot></sc-if></div>
+              <div style="flex:1 1 auto;display:flex;flex-direction:column;gap:4px;min-width:0">
+                <div style="font-weight:700;font-size:18px;letter-spacing:-.03em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ f.title }}</div>
+                <div style="font-family:'DM Mono',monospace;font-size:13px;color:#5E554C;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ f.meta }}</div>
+                <sc-if value="{{ f.isSold }}"><div style="align-self:flex-start;font-family:'DM Mono',monospace;font-size:11px;background:#141210;color:#F7F3EE;padding:3px 9px;border-radius:99px">sold</div></sc-if>
+              </div>
+              <div style="font-family:'DM Mono',monospace;font-weight:500;font-size:20px;flex:none">{{ f.price }}</div>
+              <button data-fav="1" aria-label="remove from liked" style="flex:none;width:40px;height:40px;border-radius:50%;border:1.5px solid #141210;background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="#E0261B" stroke="#E0261B" stroke-width="2"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path></svg>
+              </button>
+            </div>
+          </sc-for>
+          <sc-if value="{{ noLiked }}">
+            <div style="padding:48px 20px;display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center;background:#fff;border-radius:14px;box-shadow:0 0 0 1px #E3DACD">
+              <img src="assets/smiley.png" alt="" style="width:56px;height:56px">
+              <div style="font-weight:800;font-size:24px;letter-spacing:-.04em">nothing liked yet.</div>
+              <div style="font-size:15px;color:#5E554C">Tap the heart on anything you like and it'll wait for you here.</div>
+              <button onClick="{{ goBrowse }}" style="height:42px;padding:0 18px;border:0;border-radius:99px;background:#E0261B;color:#fff;font-size:15px;font-weight:700;cursor:pointer">go browse</button>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+
       <sc-if value="{{ showBuying }}">
         <div style="display:flex;flex-direction:column;gap:10px">
           <sc-for list="{{ myOffers }}" as="b">
@@ -469,7 +497,7 @@ select{-webkit-appearance:none;appearance:none;background-image:url("data:image/
           <sc-if value="{{ noMyOffers }}">
             <div style="padding:48px 20px;display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center;background:#fff;border-radius:14px;box-shadow:0 0 0 1px #E3DACD">
               <img src="assets/smiley.png" alt="" style="width:56px;height:56px">
-              <div style="font-weight:800;font-size:24px;letter-spacing:-.04em">no offers out yet.</div>
+              <div style="font-weight:800;font-size:24px;letter-spacing:-.04em">no bids out yet.</div>
               <button onClick="{{ goBrowse }}" style="height:42px;padding:0 18px;border:0;border-radius:99px;background:#E0261B;color:#fff;font-size:15px;font-weight:700;cursor:pointer">go browse</button>
             </div>
           </sc-if>
@@ -872,6 +900,9 @@ class Component extends DCLogic {
     });
     const myOffers = [];
     s.listings.forEach(l => { if (!l.mine) l.offers.forEach(o => { if (o.mine) myOffers.push({ ...card(l), seller: l.seller, asking: '$' + l.price, amount: '$' + o.amount, statusLabel: o.status === 'accepted' ? 'you got it!' : o.status === 'declined' ? 'declined' : 'waiting on seller', open: (e) => { e.stopPropagation(); e.preventDefault(); this.openItem(l.id); } }); }); });
+    const liked = s.listings.filter(l => s.favs[l.id]).map(l => ({
+      ...card(l), meta: this.sellerName(l) + ' · ' + l.pickup, isSold: l.status === 'sold', opacity: l.status === 'sold' ? 0.6 : 1
+    }));
     const incoming = s.listings.filter(l => l.mine).reduce((n, l) => n + l.offers.filter(o => o.status === 'pending').length, 0);
 
     if (!this.marquee) {
@@ -939,7 +970,10 @@ class Component extends DCLogic {
       preview: { bg: sc.bg, hasPhoto: sl.photos.length > 0, noPhoto: !sl.photos.length, photo: sl.photos[0], title: sl.title.trim().toLowerCase() || 'your thing', price: sl.price ? '$' + sl.price : '$—', meta: (user ? user.name : 'you') + ' · ' + sl.pickup },
 
       mine, mineCount: mine.length, myOffers, myOffersCount: myOffers.length, noMyOffers: myOffers.length === 0,
-      showSelling: s.dashTab === 'selling', showBuying: s.dashTab === 'buying',
+      liked, likedCount: liked.length, noLiked: liked.length === 0,
+      showSelling: s.dashTab === 'selling', showLiked: s.dashTab === 'liked', showBuying: s.dashTab === 'buying',
+      tabLiked: () => this.setState({ dashTab: 'liked' }),
+      tabLikedBg: s.dashTab === 'liked' ? '#141210' : 'transparent', tabLikedFg: s.dashTab === 'liked' ? '#F7F3EE' : '#141210',
       tabSelling: () => this.setState({ dashTab: 'selling' }), tabBuying: () => this.setState({ dashTab: 'buying' }),
       tabSellBg: s.dashTab === 'selling' ? '#141210' : 'transparent', tabSellFg: s.dashTab === 'selling' ? '#F7F3EE' : '#141210',
       tabBuyBg: s.dashTab === 'buying' ? '#141210' : 'transparent', tabBuyFg: s.dashTab === 'buying' ? '#F7F3EE' : '#141210',

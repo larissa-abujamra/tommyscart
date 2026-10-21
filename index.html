@@ -86,7 +86,9 @@ input,textarea,select{font-family:inherit}
       <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(780px,90%);display:flex;flex-direction:column;align-items:center;gap:22px;text-align:center;z-index:1;pointer-events:none">
         <div style="font-family:'DM Mono',monospace;font-size:13px;color:#fff;padding:6px 14px;border:1.5px solid #fff;border-radius:99px">buy &amp; sell with people on campus</div>
         <h1 style="margin:0;font-weight:800;font-size:clamp(60px,11vw,168px);letter-spacing:-.055em;line-height:.86;color:#EEB405;text-wrap:balance">{{ slogan }}</h1>
-        <p style="margin:0;font-size:clamp(17px,1.6vw,21px);line-height:1.4;color:#fff;max-width:500px;text-wrap:pretty">List your stuff in a minute. Classmates send offers. <br>You pick who gets it.</p>
+        <sc-if value="{{ showTagline }}" hint-placeholder-val="{{ true }}">
+          <p style="margin:0;font-size:clamp(17px,1.6vw,21px);line-height:1.4;color:#fff;max-width:500px;text-wrap:pretty">List your stuff in a minute. Classmates send offers. <br>You pick who gets it.</p>
+        </sc-if>
         <div style="pointer-events:auto;display:flex;flex-wrap:wrap;justify-content:center;gap:10px;width:100%;max-width:560px">
           <div style="flex:1 1 260px;display:flex;align-items:center;gap:10px;height:56px;padding:0 20px;background:#fff;border-radius:99px">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#141210" stroke-width="2.2"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>
@@ -883,7 +885,7 @@ class Component extends DCLogic {
 
     return {
       heroRef: this.heroRef, marquee: this.marquee, slogan, heroCards,
-      heroH: mobile ? '660px' : 'clamp(620px, 88vh, 880px)',
+      heroH: mobile ? '660px' : 'clamp(620px, 88vh, 880px)', showTagline: !mobile,
       stopClick: (e) => { e.stopPropagation(); e.preventDefault(); },
       stopProp: (e) => e.stopPropagation(),
       isHome: s.view === 'home', isItem: s.view === 'item', isSell: s.view === 'sell', isDash: s.view === 'dashboard',

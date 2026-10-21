@@ -120,7 +120,6 @@ input,textarea,select{font-family:inherit}
       <div style="display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px">
         <div style="display:flex;flex-direction:column;gap:6px">
           <h2 style="margin:0;font-weight:800;font-size:clamp(34px,5vw,60px);letter-spacing:-.05em;line-height:.9">fresh on the cart.</h2>
-          <div style="font-family:'DM Mono',monospace;font-size:13px;color:#5E554C">{{ feedCount }}</div>
         </div>
         <label style="display:flex;align-items:center;gap:8px;font-family:'DM Mono',monospace;font-size:13px">
           <span>sort</span>
@@ -905,7 +904,7 @@ class Component extends DCLogic {
       loggedIn: !!user, loggedOut: !user, userInitial: user ? user.name[0].toUpperCase() : '', userEmail: user ? user.email : '',
       hasIncoming: !!user && incoming > 0, incomingCount: incoming,
 
-      feed: feed.map(card), feedCount: !s.loaded ? 'loading the cart…' : feed.length + (feed.length === 1 ? ' thing' : ' things') + ' listed by students right now',
+      feed: feed.map(card),
       noResults: s.loaded && feed.length === 0, clearFilters: () => this.setState({ q: '', cat: 'all' }),
       sort: s.sort, onSort: (e) => this.setState({ sort: e.target.value }),
       gridCols: 'repeat(auto-fill, minmax(' + gridMin + 'px, 1fr))',

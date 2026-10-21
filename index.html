@@ -232,7 +232,7 @@ select{-webkit-appearance:none;appearance:none;background-image:url("data:image/
 
           <div style="display:flex;flex-direction:column;border-top:1.5px solid #141210">
             <div style="display:flex;justify-content:space-between;gap:16px;padding:12px 0;border-bottom:1px solid #DED5C8;font-size:15px"><span style="color:#5E554C">condition</span><span style="font-weight:600">{{ item.cond }}</span></div>
-            <div style="display:flex;justify-content:space-between;gap:16px;padding:12px 0;border-bottom:1px solid #DED5C8;font-size:15px"><span style="color:#5E554C">pickup</span><span style="font-weight:600">{{ item.pickup }}</span></div>
+            <div style="display:flex;justify-content:space-between;gap:16px;padding:12px 0;border-bottom:1px solid #DED5C8;font-size:15px"><span style="color:#5E554C">pickup</span><span style="font-weight:600">{{ item.pickupLabel }}</span></div>
             <div style="display:flex;justify-content:space-between;gap:16px;padding:12px 0;border-bottom:1px solid #DED5C8;font-size:15px"><span style="color:#5E554C">listed</span><span style="font-weight:600">{{ item.time }}</span></div>
           </div>
           <div style="font-size:17px;line-height:1.5;text-wrap:pretty">{{ item.desc }}</div>
@@ -291,7 +291,6 @@ select{-webkit-appearance:none;appearance:none;background-image:url("data:image/
     <div style="max-width:1180px;width:100%;margin:0 auto;padding:clamp(28px,4vw,56px) clamp(16px,3vw,32px) 72px;display:flex;flex-direction:column;gap:28px">
       <div style="display:flex;flex-direction:column;gap:8px">
         <h1 style="margin:0;font-weight:800;font-size:clamp(40px,6vw,76px);letter-spacing:-.055em;line-height:.88">list something.</h1>
-        <div style="font-size:17px;color:#5E554C">Photos first. Classmates send offers, you pick who gets it.</div>
       </div>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:clamp(24px,4vw,48px);align-items:start">
         <div style="display:flex;flex-direction:column;gap:22px;grid-column:span {{ formSpan }}">
@@ -345,7 +344,6 @@ select{-webkit-appearance:none;appearance:none;background-image:url("data:image/
                 <span style="font-family:'DM Mono',monospace;font-size:22px">$</span>
                 <input value="{{ sell.price }}" onChange="{{ onSellPrice }}" inputmode="numeric" placeholder="0" style="flex:1;min-width:0;border:0;outline:0;font-family:'DM Mono',monospace;font-size:22px;background:transparent;color:#141210">
               </div>
-              <div style="font-size:14px;line-height:1.4;color:#5E554C;max-width:300px">{{ priceHint }} Buyers can offer above or below.</div>
             </div>
           </div>
 
@@ -355,15 +353,8 @@ select{-webkit-appearance:none;appearance:none;background-image:url("data:image/
           </label>
 
           <label style="display:flex;flex-direction:column;gap:8px">
-            <span style="font-weight:700;font-size:15px">pickup spot</span>
-            <select value="{{ sell.pickup }}" onChange="{{ onSellPickup }}" style="height:50px;padding:0 42px 0 14px;border:1.5px solid #141210;border-radius:10px;font-size:16px;background-color:#fff;color:#141210;cursor:pointer">
-              <option value="leavey library">leavey library</option>
-              <option value="doheny steps">doheny steps</option>
-              <option value="village">village</option>
-              <option value="vkc">vkc</option>
-              <option value="parkside">parkside</option>
-              <option value="tutor campus center">tutor campus center</option>
-            </select>
+            <span style="font-weight:700;font-size:15px">pickup spot <span style="font-weight:500;color:#8A8178">(optional)</span></span>
+            <input value="{{ sell.pickup }}" onChange="{{ onSellPickup }}" maxlength="80" placeholder="e.g. leavey library, my building's lobby…" style="height:50px;padding:0 14px;border:1.5px solid #141210;border-radius:10px;font-size:16px;outline:0;background:#fff;color:#141210">
           </label>
 
           <sc-if value="{{ hasSellErr }}"><div style="font-size:15px;color:#E0261B;font-weight:600">{{ sellErr }}</div></sc-if>
@@ -413,7 +404,7 @@ select{-webkit-appearance:none;appearance:none;background-image:url("data:image/
                 </div>
                 <div style="flex:1 1 200px;display:flex;flex-direction:column;gap:4px;min-width:0">
                   <div style="font-weight:700;font-size:20px;letter-spacing:-.03em">{{ m.title }}</div>
-                  <div style="font-family:'DM Mono',monospace;font-size:13px;color:#5E554C">asking {{ m.price }} · {{ m.pickup }}</div>
+                  <div style="font-family:'DM Mono',monospace;font-size:13px;color:#5E554C">{{ m.askLine }}</div>
                 </div>
                 <div style="font-family:'DM Mono',monospace;font-size:12px;padding:6px 12px;border-radius:99px;background:{{ m.statusBg }};color:{{ m.statusFg }}">{{ m.statusLabel }}</div>
               </div>
@@ -569,9 +560,7 @@ class Component extends DCLogic {
     { id: 'tickets', label: 'music & tix', bg: '#6FA3E6' },
     { id: 'bikes', label: 'bikes', bg: '#F28A6B' }
   ];
-  RANGE = { fits: [15, 45], dorm: [10, 60], tech: [40, 180], books: [15, 60], tickets: [20, 80], bikes: [80, 250] };
-  CONDS = ['new with tags', 'like new', 'good', 'well-loved'];
-  PICKUPS = ['leavey library', 'doheny steps', 'village', 'vkc', 'parkside', 'tutor campus center'];
+  CONDS = ['in perfect condition', 'used very few times', 'like new', 'new with tag'];
   SLOGANS = ['have a nice haul.', 'one dorm over.', 'buy it off the quad.', 'pre-loved, post-finals.', 'someone wants it.', 'name your price.'];
   AV = ['#F4BFCB', '#C5D6E2', '#EEB405', '#EAE3D8', '#6FA3E6'];
 
@@ -584,7 +573,7 @@ class Component extends DCLogic {
     navOpen: false, heroPos: {}, z: 20, vw: typeof window !== 'undefined' ? window.innerWidth : 1280, toast: null
   };
 
-  blankSell() { return { title: '', price: '', cat: 'fits', cond: 'good', desc: '', pickup: 'leavey library', photos: [] }; }
+  blankSell() { return { title: '', price: '', cat: 'fits', cond: 'like new', desc: '', pickup: '', photos: [] }; }
 
   ago(ts) {
     const m = Math.max(0, Math.round((Date.now() - new Date(ts).getTime()) / 60000));
@@ -716,6 +705,7 @@ class Component extends DCLogic {
     const mineOffer = l.offers.find(o => o.mine);
     this.go('item', { itemId: id, activePhoto: 0, offerErr: '', offerMsg: '', offerAmt: String(mineOffer ? mineOffer.amount : l.price) });
   }
+  withPickup(text, pickup) { return pickup ? text + ' · ' + pickup : text; }
   sellerName(l) { return l.mine ? (this.state.user ? this.state.user.name + ' (you)' : 'you') : l.seller; }
   cat(id) { return this.CATS.find(c => c.id === id) || this.CATS[1]; }
 
@@ -791,7 +781,7 @@ class Component extends DCLogic {
       }
       const { error } = await sb.from('listings').insert({
         seller_id: user.id, seller_name: user.name, title: sl.title.trim().toLowerCase(), cat: sl.cat, price: p,
-        cond: sl.cond, description: sl.desc.trim(), pickup: sl.pickup, photos
+        cond: sl.cond, description: sl.desc.trim(), pickup: sl.pickup.trim(), photos
       });
       if (error) throw error;
     } catch (e) {
@@ -825,7 +815,7 @@ class Component extends DCLogic {
         id: l.id, title: l.title, price: '$' + l.price, bg: l.bg || c.bg, slotId: l.slotId,
         fit: l.cutout ? 'contain' : 'cover', pad: l.cutout ? '9%' : '0', blend: l.cutout ? 'multiply' : 'normal',
         hasPhoto: l.photos.length > 0, noPhoto: l.photos.length === 0, photo: l.photos[0],
-        meta: this.sellerName(l) + ' · ' + l.pickup, isMine: l.mine,
+        meta: this.withPickup(this.sellerName(l), l.pickup), isMine: l.mine,
         hasOffers: pend > 0, offerLabel: pend + (pend > 1 ? ' offers' : ' offer'),
         heartFill: fav ? '#E0261B' : 'none', heartStroke: fav ? '#E0261B' : '#141210',
         open: (e) => {
@@ -856,7 +846,7 @@ class Component extends DCLogic {
     });
     const photos = it.photos;
     const item = {
-      ...ic, cond: it.cond, pickup: it.pickup, time: it.time, desc: it.desc, catLabel: this.cat(it.cat).label,
+      ...ic, cond: it.cond, pickupLabel: it.pickup || 'ask the seller', time: it.time, desc: it.desc, catLabel: this.cat(it.cat).label,
       seller: this.sellerName(it), initial: (it.mine && user ? user.name : it.seller)[0].toUpperCase(),
       mainPhoto: photos[s.activePhoto] || photos[0], hasThumbs: photos.length > 1,
       thumbs: photos.map((p, i) => ({ src: p, ring: i === s.activePhoto ? '#141210' : 'transparent', onClick: () => this.setState({ activePhoto: i }) })),
@@ -869,7 +859,7 @@ class Component extends DCLogic {
       soldNote: 'sold to ' + it.soldTo + '.'
     };
 
-    const sl = s.sell, sc = this.cat(sl.cat), rg = this.RANGE[sl.cat];
+    const sl = s.sell, sc = this.cat(sl.cat);
 
     const mine = s.listings.filter(l => l.mine).map(l => {
       const c = card(l);
@@ -878,7 +868,7 @@ class Component extends DCLogic {
       const pend = l.offers.filter(o => o.status === 'pending').length;
       const sold = l.status === 'sold';
       return {
-        ...c, pickup: l.pickup, open: (e) => { e.stopPropagation(); e.preventDefault(); this.openItem(l.id); },
+        ...c, askLine: this.withPickup('asking $' + l.price, l.pickup), open: (e) => { e.stopPropagation(); e.preventDefault(); this.openItem(l.id); },
         statusLabel: sold ? 'sold to ' + l.soldTo : (pend ? pend + ' pending' : 'live'),
         statusBg: sold ? '#141210' : (pend ? '#EEB405' : '#EAE3D8'), statusFg: sold ? '#F7F3EE' : '#141210',
         noOffers: l.offers.length === 0,
@@ -901,7 +891,7 @@ class Component extends DCLogic {
     const myOffers = [];
     s.listings.forEach(l => { if (!l.mine) l.offers.forEach(o => { if (o.mine) myOffers.push({ ...card(l), seller: l.seller, asking: '$' + l.price, amount: '$' + o.amount, statusLabel: o.status === 'accepted' ? 'you got it!' : o.status === 'declined' ? 'declined' : 'waiting on seller', open: (e) => { e.stopPropagation(); e.preventDefault(); this.openItem(l.id); } }); }); });
     const liked = s.listings.filter(l => s.favs[l.id]).map(l => ({
-      ...card(l), meta: this.sellerName(l) + ' · ' + l.pickup, isSold: l.status === 'sold', opacity: l.status === 'sold' ? 0.6 : 1
+      ...card(l), isSold: l.status === 'sold', opacity: l.status === 'sold' ? 0.6 : 1
     }));
     const incoming = s.listings.filter(l => l.mine).reduce((n, l) => n + l.offers.filter(o => o.status === 'pending').length, 0);
 
@@ -965,9 +955,8 @@ class Component extends DCLogic {
       onSellPickup: (e) => this.setSell('pickup', e.target.value),
       sellCats: this.CATS.filter(c => c.id !== 'all').map(c => ({ label: c.label, ...this.chip(sl.cat === c.id, c.bg), onClick: () => this.setSell('cat', c.id) })),
       condChips: this.CONDS.map(c => ({ label: c, ...this.chip(sl.cond === c), onClick: () => this.setSell('cond', c) })),
-      priceHint: 'Similar ' + sc.label + ' go for $' + rg[0] + '–$' + rg[1] + ' here.',
-      pickups: this.PICKUPS, publish: this.publish, publishLabel: s.publishing ? 'uploading…' : 'put it on the cart',
-      preview: { bg: sc.bg, hasPhoto: sl.photos.length > 0, noPhoto: !sl.photos.length, photo: sl.photos[0], title: sl.title.trim().toLowerCase() || 'your thing', price: sl.price ? '$' + sl.price : '$—', meta: (user ? user.name : 'you') + ' · ' + sl.pickup },
+      publish: this.publish, publishLabel: s.publishing ? 'uploading…' : 'put it on the cart',
+      preview: { bg: sc.bg, hasPhoto: sl.photos.length > 0, noPhoto: !sl.photos.length, photo: sl.photos[0], title: sl.title.trim().toLowerCase() || 'your thing', price: sl.price ? '$' + sl.price : '$—', meta: this.withPickup(user ? user.name : 'you', sl.pickup.trim()) },
 
       mine, mineCount: mine.length, myOffers, myOffersCount: myOffers.length, noMyOffers: myOffers.length === 0,
       liked, likedCount: liked.length, noLiked: liked.length === 0,
